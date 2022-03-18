@@ -21,6 +21,13 @@ class HtmlTagsBasedUnfurler(
   private fun UnfurlerDelegateScope.downloadHtml(url: HttpUrl): Document? {
     val request: Request = Request.Builder()
       .url(url)
+      .apply {
+        if (url.host.contains("twitter.com")) {
+          // Masquerade as a Googlebot to prevent Twitter from using javascript to load their data
+          // asynchronously. It is preferred to use TweetUnfurler whenever possible to avoid this.
+          header("User-Agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://google.com/bot.html)")
+        }
+      }
       .build()
 
     return try {

@@ -8,11 +8,17 @@ import com.squareup.moshi.adapter
 import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.delegates.UnfurlerDelegate
 import me.saket.unfurl.delegates.UnfurlerDelegateScope
+import me.saket.unfurl.delegates.html.HtmlTagsBasedUnfurler
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /**
+ * Because Twitter uses javascript for rendering its webpages, [HtmlTagsBasedUnfurler]
+ * isn't able to extract all metadata of tweets. TweetUnfurler can be used as an alternative.
+ *
+ * FYI rate-limiting isn't handled yet.
+ *
  * @param bearerToken can be obtained by signing up for a developer account at
  * [https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api].
  */
