@@ -41,15 +41,15 @@ class TweetUnfurler(private val bearerToken: String) : UnfurlerDelegate {
 
     try {
       httpClient.newCall(request).execute().use { response ->
-        val responseBody = response.body
-        if (responseBody != null) {
-          val tweet = moshi.adapter<TweetResponse>().fromJson(responseBody.source())!!
+        response.body?.let { body ->
+          val tweet = moshi.adapter<TweetResponse>().fromJson(body.source())!!
           val user = tweet.includes.users.firstOrNull()
           return UnfurlResult(
             url = url,
             title = user?.name,
             description = tweet.data.firstOrNull()?.text,
             thumbnail = user?.profile_image_url?.fullSizedImage()?.toHttpUrlOrNull(),
+            // Latest favicon can be found on https://developer.twitter.com/en/docs/twitter-for-websites/web-intents/image-resources.
             favicon = "https://cdn.cms-twdigitalassets.com/content/dam/developer-twitter/images/Twitter_logo_blue_48.png".toHttpUrl()
           )
         }
@@ -59,38 +59,38 @@ class TweetUnfurler(private val bearerToken: String) : UnfurlerDelegate {
     }
     return null
   }
-}
 
-/**
- * Twitter sends tiny images by default, but the URL can be changed to fetch their original size.
- * [Source](https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/user-profile-images-and-banners).
- */
-private fun String.fullSizedImage(): String {
-  return if (endsWith("_normal.jpg")) {
-    "${substringBefore("_normal.jpg")}.jpg"
-  } else {
-    this
+  /**
+   * Twitter sends tiny images by default, but the URL can be changed to fetch their original size.
+   * [Source](https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/user-profile-images-and-banners).
+   */
+  private fun String.fullSizedImage(): String {
+    return if (endsWith("_normal.jpg")) {
+      "${substringBefore("_normal.jpg")}.jpg"
+    } else {
+      this
+    }
   }
-}
-
-@JsonClass(generateAdapter = true)
-data class TweetResponse(
-  val data: List<Data>,
-  val includes: Includes
-) {
-  @JsonClass(generateAdapter = true)
-  data class Data(
-    val text: String
-  )
 
   @JsonClass(generateAdapter = true)
-  data class Includes(
-    val users: List<User>
-  )
+  internal data class TweetResponse(
+    val data: List<Data>,
+    val includes: Includes
+  ) {
+    @JsonClass(generateAdapter = true)
+    data class Data(
+      val text: String
+    )
 
-  @JsonClass(generateAdapter = true)
-  data class User(
-    val profile_image_url: String,
-    val name: String
-  )
+    @JsonClass(generateAdapter = true)
+    data class Includes(
+      val users: List<User>
+    )
+
+    @JsonClass(generateAdapter = true)
+    data class User(
+      val profile_image_url: String,
+      val name: String
+    )
+  }
 }

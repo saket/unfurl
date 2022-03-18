@@ -9,5 +9,6 @@ application {
 
 dependencies {
   implementation(project(":unfurl"))
+  implementation(project(":unfurl-social"))
   implementation("com.github.ajalt.clikt:clikt:3.4.0")
 }
