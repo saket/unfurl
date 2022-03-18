@@ -2,6 +2,7 @@ package me.saket.unfurl.cmd
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import me.saket.unfurl.Unfurler
 import me.saket.unfurl.social.TweetUnfurler
@@ -13,6 +14,7 @@ fun main(args: Array<String>) {
 class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val url: String by argument("url")
   private val twitterToken: String? by option()
+  private val debug: Boolean by option().flag(default = false)
 
   override fun run() {
     val unfurler = Unfurler(
@@ -20,7 +22,11 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       delegates = listOfNotNull(
         twitterToken?.let { TweetUnfurler(bearerToken = it) }
       ),
-      logger = ::println
+      logger = {
+        if (debug) {
+          println(it)
+        }
+      }
     )
 
     echo("")
@@ -29,8 +35,14 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       echo("Couldn't unfurl", err = true)
     } else {
       with(unfurled) {
-        echo("Title: \"${if (title == null) "<empty>" else title}\"")
-        echo("Description: \"${if (description == null) "<empty>" else description}\"")
+        when (title) {
+          null -> echo("Title: null")
+          else -> echo("Title: \"$title\"")
+        }
+        when (description) {
+          null -> echo("Title: null")
+          else -> echo("Description: \"$description\"")
+        }
         echo("Thumbnail: $thumbnail")
         echo("Favicon: $favicon")
       }
