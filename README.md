@@ -1,6 +1,6 @@
 # unfurl
 
-`unfurl` extracts social metadata of webpages for generating their previews, inspired by slack.
+`unfurl` extracts social metadata of webpages for generating link previews, inspired by slack.
 
 ```kotlin
 val unfurler = Unfurler()
