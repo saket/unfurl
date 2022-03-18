@@ -3,7 +3,6 @@ package me.saket.unfurl.cmd
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.option
-import kotlinx.coroutines.runBlocking
 import me.saket.unfurl.Unfurler
 import me.saket.unfurl.social.TweetUnfurler
 
@@ -15,7 +14,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val url: String by argument("url")
   private val twitterToken: String? by option()
 
-  override fun run(): Unit = runBlocking {
+  override fun run() {
     val unfurler = Unfurler(
       cacheSize = 0,
       delegates = listOfNotNull(
