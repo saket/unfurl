@@ -1,18 +1,28 @@
 # unfurl
 
+`unfurl` extracts social metadata of webpages for generating their previews, inspired by slack.
+
 ```kotlin
 val unfurler = Unfurler()
 println(unfurler.unfurl("https://saket.me/great-teams-merge-fast/"))
+
+UnfurlResult(
+  url = "https://saket.me/great-teams-merge-fast", 
+  title = "Great teams merge fast", 
+  description = "Observations from watching my team at Square produce stellar work while moving fast and not breaking things.", 
+  favicon = "https://saket.me/wp-content/uploads/2022/03/cropped-saket-photo-180x180.jpg", 
+  thumbnail = "https://saket.me/wp-content/uploads/2021/02/great_teams_merge_fast_cover.jpg"
+)
 ```
 
-```text
-UnfurlResult(
-  url = https://saket.me/great-teams-merge-fast/, 
-  title = Great teams merge fast, 
-  description = Observations from watching my team at Square produce stellar work while moving fast and not breaking things., 
-  favicon = https://saket.me/wp-content/uploads/2022/03/cropped-saket-photo-180x180.jpg, 
-  thumbnail = https://saket.me/wp-content/uploads/2021/02/great_teams_merge_fast_cover.jpg
-)
+```groovy
+implementation "me.saket.unfurl:unfurl:1.5.0"
+```
+
+### cli
+```bash
+$ brew install saket/repo/unfurl
+$ unfurl https://saket.me/great-teams-merge-fast
 ```
 
 ## License

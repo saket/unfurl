@@ -29,11 +29,11 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       }
     )
 
-    echo("")
     val unfurled = unfurler.unfurl(url)
     if (unfurled == null) {
       echo("Couldn't unfurl", err = true)
     } else {
+      echo("")
       with(unfurled) {
         when (title) {
           null -> echo("Title: null")
