@@ -12,7 +12,7 @@ import okhttp3.OkHttpClient
 class Unfurler(
   cacheSize: Int = 100,
   delegates: List<UnfurlerDelegate> = emptyList(),
-  override val httpClient: OkHttpClient = OkHttpClient.Builder().build(),
+  override val httpClient: OkHttpClient = defaultOkHttpClient(),
   override val logger: Logger = PrintlnLogger
 ) : UnfurlerDelegateScope {
 
@@ -32,6 +32,15 @@ class Unfurler(
         logger.log(e.stackTraceToString())
         null
       }
+    }
+  }
+
+  companion object {
+    fun defaultOkHttpClient(): OkHttpClient {
+      return OkHttpClient.Builder()
+        .followRedirects(true)
+        .followSslRedirects(true)
+        .build()
     }
   }
 }
