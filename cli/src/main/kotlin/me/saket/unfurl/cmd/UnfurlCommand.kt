@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import me.saket.unfurl.Unfurler
 import me.saket.unfurl.social.TweetUnfurler
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 fun main(args: Array<String>) {
   UnfurlCommand().main(args)
@@ -17,6 +18,11 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val debug: Boolean by option().flag(default = false)
 
   override fun run() {
+    if (url.toHttpUrlOrNull() == null) {
+      echo("Invalid link", err = true)
+      return
+    }
+
     val unfurler = Unfurler(
       cacheSize = 0,
       delegates = listOfNotNull(
