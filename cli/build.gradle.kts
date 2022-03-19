@@ -11,4 +11,8 @@ dependencies {
   implementation(project(":unfurl"))
   implementation(project(":unfurl-social"))
   implementation("com.github.ajalt.clikt:clikt:3.4.0")
+
+  // The version of OkHttp used by :unfurl fails to download AndroidPolice.com
+  // articles with "StreamResetException: stream was reset: PROTOCOL_ERROR" errors.
+  implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.6")
 }
