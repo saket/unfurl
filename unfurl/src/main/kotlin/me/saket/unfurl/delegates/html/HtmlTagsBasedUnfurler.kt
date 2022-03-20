@@ -4,6 +4,7 @@ import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.delegates.UnfurlerDelegate
 import me.saket.unfurl.delegates.UnfurlerDelegateScope
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType
 import okhttp3.Request
 import org.jsoup.Jsoup
@@ -15,7 +16,7 @@ class HtmlTagsBasedUnfurler(
   private val parsers = parsers + DefaultHtmlMetadataParser()
 
   override fun UnfurlerDelegateScope.unfurl(url: HttpUrl): UnfurlResult? {
-    return downloadHtml(url)?.extractMetadata(url)
+    return downloadHtml(url)?.extractMetadata()
   }
 
   private fun UnfurlerDelegateScope.downloadHtml(url: HttpUrl): Document? {
@@ -33,12 +34,14 @@ class HtmlTagsBasedUnfurler(
     return try {
       httpClient.newCall(request).execute().use { response ->
         val body = response.body
+        val redirectedUrl = response.request.url
+
         if (body != null && body.contentType().isHtmlText()) {
           // TODO: stream the HTML body only until a "</head>" is received instead of streaming the entire HTML body.
           Jsoup.parse(
             /* in */ body.source().inputStream(),
             /* charsetName */ null,
-            /* baseUri */ url.toString()
+            /* baseUri */ redirectedUrl.toString()
           )
         } else {
           null
@@ -50,9 +53,9 @@ class HtmlTagsBasedUnfurler(
     }
   }
 
-  private fun Document.extractMetadata(url: HttpUrl): UnfurlResult? {
+  private fun Document.extractMetadata(): UnfurlResult? {
     return parsers.asSequence()
-      .map { it.parse(url, document = this) }
+      .map { it.parse(url = baseUri().toHttpUrl(), document = this) }
       .firstOrNull()
   }
 

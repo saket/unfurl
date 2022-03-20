@@ -41,6 +41,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     } else {
       echo("")
       with(unfurled) {
+        echo("Url: $url")
         when (title) {
           null -> echo("Title: null")
           else -> echo("Title: \"$title\"")
