@@ -16,7 +16,7 @@ UnfurlResult(
 ```
 
 ```groovy
-implementation "me.saket.unfurl:unfurl:1.5.0"
+implementation "me.saket.unfurl:unfurl:1.6.0"
 ```
 
 ### cli
