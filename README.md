@@ -15,8 +15,16 @@ UnfurlResult(
 )
 ```
 
+`unfurl` is extensible. Custom delegates can be used for websites that can't be HTML scraped because they, say, use javascript for rendering their data. As an example, `unfurl` ships with `TweetUnfurler` for extracting metadata of tweets.
+
+```kotlin
+val unfurler = Unfurler(
+  delegates = listOf(TweetUnfurler(), ...)
+)
+```
 ```groovy
 implementation "me.saket.unfurl:unfurl:1.6.0"
+implementation "me.saket.unfurl:unfurl-social:1.6.0" // For TweetUnfurler.
 ```
 
 ### cli
