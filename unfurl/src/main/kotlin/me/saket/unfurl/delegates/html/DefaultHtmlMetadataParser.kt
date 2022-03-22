@@ -7,7 +7,7 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.jsoup.nodes.Document
 
-open class DefaultHtmlMetadataParser : HtmlMetadataParser {
+class DefaultHtmlMetadataParser : HtmlMetadataParser {
   override fun parse(url: HttpUrl, document: Document): UnfurlResult? {
     return UnfurlResult(
       url = url,
@@ -18,7 +18,7 @@ open class DefaultHtmlMetadataParser : HtmlMetadataParser {
     )
   }
 
-  protected fun parseTitle(document: Document): String? {
+  private fun parseTitle(document: Document): String? {
     val linkTitle = metaTag(document, "twitter:title", useAbsoluteUrl = false)
       ?: metaTag(document, "og:title", useAbsoluteUrl = false)
       ?: document.title().nullIfBlank()
@@ -29,7 +29,7 @@ open class DefaultHtmlMetadataParser : HtmlMetadataParser {
     return linkTitle
   }
 
-  protected fun parseDescription(document: Document): String? {
+  private fun parseDescription(document: Document): String? {
     val linkTitle = metaTag(document, "twitter:description", useAbsoluteUrl = false)
       ?: metaTag(document, "og:description", useAbsoluteUrl = false)
 
@@ -39,7 +39,7 @@ open class DefaultHtmlMetadataParser : HtmlMetadataParser {
     return linkTitle
   }
 
-  protected fun parseThumbnailUrl(document: Document): HttpUrl? {
+  private fun parseThumbnailUrl(document: Document): HttpUrl? {
     // Twitter's image tag is preferred over facebook's
     // because websites seem to give better images for twitter.
     val thumbnailUrl = metaTag(document, "twitter:image", useAbsoluteUrl = true)
@@ -52,7 +52,7 @@ open class DefaultHtmlMetadataParser : HtmlMetadataParser {
     return (if (needsScheme) "https:$thumbnailUrl" else thumbnailUrl)?.toHttpUrlOrNull()
   }
 
-  protected fun parseFaviconUrl(document: Document): HttpUrl? {
+  private fun parseFaviconUrl(document: Document): HttpUrl? {
     val faviconUrl = linkRelTag(document, "apple-touch-icon")
       ?: linkRelTag(document, "apple-touch-icon-precomposed")
       ?: linkRelTag(document, "shortcut icon")
