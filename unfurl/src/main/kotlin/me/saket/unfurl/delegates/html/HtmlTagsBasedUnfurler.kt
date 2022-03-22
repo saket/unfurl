@@ -16,7 +16,9 @@ class HtmlTagsBasedUnfurler(
   private val parsers = parsers + DefaultHtmlMetadataParser()
 
   override fun UnfurlerDelegateScope.unfurl(url: HttpUrl): UnfurlResult? {
-    return downloadHtml(url)?.extractMetadata()
+    return downloadHtml(url)?.let { doc ->
+      extractMetadata(doc)
+    }
   }
 
   private fun UnfurlerDelegateScope.downloadHtml(url: HttpUrl): Document? {
@@ -53,9 +55,13 @@ class HtmlTagsBasedUnfurler(
     }
   }
 
-  private fun Document.extractMetadata(): UnfurlResult? {
+  private fun UnfurlerDelegateScope.extractMetadata(document: Document): UnfurlResult? {
     return parsers.asSequence()
-      .map { it.parse(url = baseUri().toHttpUrl(), document = this) }
+      .map { parser ->
+        parser.run {
+          parse(url = document.baseUri().toHttpUrl(), document = document)
+        }
+      }
       .firstOrNull()
   }
 

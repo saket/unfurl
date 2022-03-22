@@ -3,12 +3,13 @@
 package me.saket.unfurl.delegates.html
 
 import me.saket.unfurl.UnfurlResult
+import me.saket.unfurl.delegates.UnfurlerDelegateScope
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.jsoup.nodes.Document
 
 class DefaultHtmlMetadataParser : HtmlMetadataParser {
-  override fun parse(url: HttpUrl, document: Document): UnfurlResult? {
+  override fun UnfurlerDelegateScope.parse(url: HttpUrl, document: Document): UnfurlResult? {
     return UnfurlResult(
       url = url,
       title = parseTitle(document),
@@ -18,23 +19,23 @@ class DefaultHtmlMetadataParser : HtmlMetadataParser {
     )
   }
 
-  private fun parseTitle(document: Document): String? {
+  private fun UnfurlerDelegateScope.parseTitle(document: Document): String? {
     val linkTitle = metaTag(document, "twitter:title", useAbsoluteUrl = false)
       ?: metaTag(document, "og:title", useAbsoluteUrl = false)
       ?: document.title().nullIfBlank()
 
     if (linkTitle == null) {
-      println("couldn't find any title for ${document.baseUri()}.")
+      logger.log("couldn't find any title for ${document.baseUri()}.")
     }
     return linkTitle
   }
 
-  private fun parseDescription(document: Document): String? {
+  private fun UnfurlerDelegateScope.parseDescription(document: Document): String? {
     val linkTitle = metaTag(document, "twitter:description", useAbsoluteUrl = false)
       ?: metaTag(document, "og:description", useAbsoluteUrl = false)
 
     if (linkTitle == null) {
-      println("couldn't find any description for ${document.baseUri()}.")
+      logger.log("couldn't find any description for ${document.baseUri()}.")
     }
     return linkTitle
   }
