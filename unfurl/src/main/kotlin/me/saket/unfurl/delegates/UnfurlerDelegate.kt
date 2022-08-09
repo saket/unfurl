@@ -1,15 +1,13 @@
 package me.saket.unfurl.delegates
 
-import me.saket.unfurl.UnfurlLogger
-import me.saket.unfurl.UnfurlResult
-import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
+@Deprecated(
+  message = "Renamed to UnfurlerExtension",
+  replaceWith = ReplaceWith("me.saket.unfurl.extension.UnfurlerExtension")
+)
+typealias UnfurlerDelegate = me.saket.unfurl.extension.UnfurlerExtension
 
-interface UnfurlerDelegate {
-  fun UnfurlerDelegateScope.unfurl(url: HttpUrl): UnfurlResult?
-}
-
-interface UnfurlerDelegateScope {
-  val httpClient: OkHttpClient
-  val logger: UnfurlLogger
-}
+@Deprecated(
+  message = "Renamed to UnfurlerExtensionScope",
+  replaceWith = ReplaceWith("me.saket.unfurl.extension.UnfurlerExtensionScope")
+)
+typealias UnfurlerDelegateScope = me.saket.unfurl.extension.UnfurlerExtensionScope

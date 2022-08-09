@@ -6,9 +6,9 @@ import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
 import me.saket.unfurl.UnfurlResult
-import me.saket.unfurl.delegates.UnfurlerDelegate
-import me.saket.unfurl.delegates.UnfurlerDelegateScope
 import me.saket.unfurl.delegates.html.HtmlTagsBasedUnfurler
+import me.saket.unfurl.extension.UnfurlerExtension
+import me.saket.unfurl.extension.UnfurlerExtensionScope
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -22,11 +22,11 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
  * @param bearerToken can be obtained by signing up for a developer account at
  * [https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api].
  */
-class TweetUnfurler(private val bearerToken: String) : UnfurlerDelegate {
+class TweetUnfurler(private val bearerToken: String) : UnfurlerExtension {
   private val regex = Regex("^/(?:\\w+)/status/([\\w\\d]+)\$")
   private val moshi = Moshi.Builder().build()
 
-  override fun UnfurlerDelegateScope.unfurl(url: HttpUrl): UnfurlResult? {
+  override fun UnfurlerExtensionScope.unfurl(url: HttpUrl): UnfurlResult? {
     if (!url.host.contains("twitter.com")) {
       return null
     }

@@ -1,4 +1,4 @@
-package me.saket.unfurl.delegates.html
+package me.saket.unfurl.extension
 
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
