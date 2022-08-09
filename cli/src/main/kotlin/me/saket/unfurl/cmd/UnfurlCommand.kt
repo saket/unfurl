@@ -26,7 +26,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
 
     val unfurler = Unfurler(
       logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp,
-      delegates = listOfNotNull(
+      extensions = listOfNotNull(
         twitterToken?.let { TweetUnfurler(bearerToken = it) }
       )
     )

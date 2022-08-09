@@ -10,11 +10,11 @@ import okhttp3.OkHttpClient
 
 class Unfurler(
   cacheSize: Int = 100,
-  delegates: List<UnfurlerExtension> = emptyList(),
+  extensions: List<UnfurlerExtension> = emptyList(),
   val httpClient: OkHttpClient = defaultOkHttpClient(),
-  val logger: UnfurlLogger = UnfurlLogger.Println
+  val logger: UnfurlLogger = UnfurlLogger.Println,
 ) {
-  private val delegates = delegates + HtmlTagsBasedUnfurler()
+  private val extensions = extensions + HtmlTagsBasedUnfurler()
   private val cache = NullableLruCache<String, UnfurlResult?>(cacheSize)
 
   private val extensionScope = object : UnfurlerExtensionScope {
@@ -26,7 +26,7 @@ class Unfurler(
     return cache.computeIfAbsent(url) {
       try {
         url.toHttpUrlOrNull()?.let { httpUrl ->
-          delegates.asSequence()
+          extensions.asSequence()
             .mapNotNull { it.run { extensionScope.unfurl(httpUrl) } }
             .firstOrNull()
         }
