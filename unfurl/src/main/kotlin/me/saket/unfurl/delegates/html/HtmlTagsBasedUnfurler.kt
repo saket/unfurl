@@ -10,11 +10,7 @@ import okhttp3.Request
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-class HtmlTagsBasedUnfurler(
-  parsers: List<HtmlMetadataParser> = emptyList(),
-) : UnfurlerDelegate {
-  private val parsers = parsers + DefaultHtmlMetadataParser()
-
+open class HtmlTagsBasedUnfurler : UnfurlerDelegate {
   override fun UnfurlerDelegateScope.unfurl(url: HttpUrl): UnfurlResult? {
     return downloadHtml(url)?.let { doc ->
       extractMetadata(doc)
@@ -55,14 +51,9 @@ class HtmlTagsBasedUnfurler(
     }
   }
 
-  private fun UnfurlerDelegateScope.extractMetadata(document: Document): UnfurlResult? {
-    return parsers.asSequence()
-      .map { parser ->
-        parser.run {
-          parse(url = document.baseUri().toHttpUrl(), document = document)
-        }
-      }
-      .firstOrNull()
+  open fun UnfurlerDelegateScope.extractMetadata(document: Document): UnfurlResult? {
+    val parser = HtmlMetadataParser(logger)
+    return parser.parse(url = document.baseUri().toHttpUrl(), document = document)
   }
 
   private fun MediaType?.isHtmlText(): Boolean {
