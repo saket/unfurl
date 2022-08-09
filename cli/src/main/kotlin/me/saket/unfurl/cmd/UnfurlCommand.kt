@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.Unfurler
 import me.saket.unfurl.social.TweetUnfurler
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -24,15 +25,10 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     }
 
     val unfurler = Unfurler(
-      cacheSize = 0,
+      logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp,
       delegates = listOfNotNull(
         twitterToken?.let { TweetUnfurler(bearerToken = it) }
-      ),
-      logger = {
-        if (debug) {
-          println(it)
-        }
-      }
+      )
     )
 
     val unfurled = unfurler.unfurl(url)

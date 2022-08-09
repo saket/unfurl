@@ -8,7 +8,7 @@ application {
 }
 
 dependencies {
-  implementation("me.saket.unfurl:unfurl:1.6.0")
+  implementation(project(":unfurl"))
   implementation("me.saket.unfurl:unfurl-social:1.6.0")
   implementation("com.github.ajalt.clikt:clikt:3.4.0")
 
