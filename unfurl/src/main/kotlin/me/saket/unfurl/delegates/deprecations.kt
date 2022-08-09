@@ -10,6 +10,6 @@ interface UnfurlerDelegate : UnfurlerExtension
 
 @Deprecated(
   message = "Renamed to UnfurlerExtensionScope",
-  replaceWith = ReplaceWith("me.saket.unfurl.extension.UnfurlerExtensionScope")
+  replaceWith = ReplaceWith("me.saket.unfurl.extension.UnfurlerScope")
 )
-typealias UnfurlerDelegateScope = me.saket.unfurl.extension.UnfurlerExtensionScope
+typealias UnfurlerDelegateScope = me.saket.unfurl.extension.UnfurlerScope

@@ -9,13 +9,13 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 open class HtmlTagsBasedUnfurler : UnfurlerExtension {
-  override fun UnfurlerExtensionScope.unfurl(url: HttpUrl): UnfurlResult? {
+  override fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
     return downloadHtml(url)?.let { doc ->
       extractMetadata(doc)
     }
   }
 
-  private fun UnfurlerExtensionScope.downloadHtml(url: HttpUrl): Document? {
+  private fun UnfurlerScope.downloadHtml(url: HttpUrl): Document? {
     val request: Request = Request.Builder()
       .url(url)
       .apply {
@@ -49,7 +49,7 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
     }
   }
 
-  open fun UnfurlerExtensionScope.extractMetadata(document: Document): UnfurlResult? {
+  open fun UnfurlerScope.extractMetadata(document: Document): UnfurlResult? {
     val parser = HtmlMetadataParser(logger)
     return parser.parse(url = document.baseUri().toHttpUrl(), document = document)
   }

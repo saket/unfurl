@@ -8,7 +8,7 @@ import com.squareup.moshi.adapter
 import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.delegates.html.HtmlTagsBasedUnfurler
 import me.saket.unfurl.extension.UnfurlerExtension
-import me.saket.unfurl.extension.UnfurlerExtensionScope
+import me.saket.unfurl.extension.UnfurlerScope
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -26,7 +26,7 @@ class TweetUnfurler(private val bearerToken: String) : UnfurlerExtension {
   private val regex = Regex("^/(?:\\w+)/status/([\\w\\d]+)\$")
   private val moshi = Moshi.Builder().build()
 
-  override fun UnfurlerExtensionScope.unfurl(url: HttpUrl): UnfurlResult? {
+  override fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
     if (!url.host.contains("twitter.com")) {
       return null
     }

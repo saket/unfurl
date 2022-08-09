@@ -6,10 +6,10 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 
 interface UnfurlerExtension {
-  fun UnfurlerExtensionScope.unfurl(url: HttpUrl): UnfurlResult?
+  fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult?
 }
 
-interface UnfurlerExtensionScope {
+interface UnfurlerScope {
   val httpClient: OkHttpClient
   val logger: UnfurlLogger
 }
