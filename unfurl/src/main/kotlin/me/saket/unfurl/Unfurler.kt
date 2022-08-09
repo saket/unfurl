@@ -4,6 +4,7 @@ import me.saket.unfurl.extension.HtmlTagsBasedUnfurler
 import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerExtensionScope
 import me.saket.unfurl.internal.NullableLruCache
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 
@@ -36,8 +37,12 @@ class Unfurler(
     }
   }
 
+  fun unfurl(url: HttpUrl): UnfurlResult? {
+    return unfurl(url.toString())
+  }
+
   companion object {
-    fun defaultOkHttpClient(): OkHttpClient {
+    internal fun defaultOkHttpClient(): OkHttpClient {
       return OkHttpClient.Builder()
         .followRedirects(true)
         .followSslRedirects(true)
