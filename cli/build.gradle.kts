@@ -9,7 +9,7 @@ application {
 
 dependencies {
   implementation(project(":unfurl"))
-  implementation("me.saket.unfurl:unfurl-social:1.6.0")
+  implementation(project(":unfurl-social"))
   implementation("com.github.ajalt.clikt:clikt:3.4.0")
 
   // The version of OkHttp used by :unfurl fails to download AndroidPolice.com

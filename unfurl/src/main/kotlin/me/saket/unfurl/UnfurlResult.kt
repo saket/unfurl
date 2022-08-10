@@ -13,4 +13,12 @@ data class UnfurlResult(
   val description: String?,
   val favicon: HttpUrl?,
   val thumbnail: HttpUrl?,
-)
+  val contentPreview: ContentPreview? = null,
+) {
+
+  /**
+   * Additional meta data that can be populated by extensions.
+   * See `TweetContentPreview` for an example.
+   */
+  interface ContentPreview
+}

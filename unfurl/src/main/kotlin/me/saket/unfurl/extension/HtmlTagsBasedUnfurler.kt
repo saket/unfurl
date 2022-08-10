@@ -44,7 +44,7 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
         }
       }
     } catch (e: Throwable) {
-      logger.log(e.stackTraceToString())
+      logger.log(e, "Failed to download HTML for $url")
       null
     }
   }
