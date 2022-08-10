@@ -19,4 +19,6 @@ jobs:
           java-version: '11'
 
       - name: Run tests
+        env:
+          unfurler_twitter_token: ${{ secrets.unfurler_twitter_token }}
         run: ./gradlew check
