@@ -14,7 +14,7 @@ data class TweetContentPreview(
   val attachments: List<AttachedMedia>,
 ) : UnfurlResult.ContentPreview {
 
-  sealed interface AttachedMedia
+  interface AttachedMedia
 
   data class AttachedImage(
     val url: HttpUrl

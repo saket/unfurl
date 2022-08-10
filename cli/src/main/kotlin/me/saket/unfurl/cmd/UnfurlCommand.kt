@@ -64,6 +64,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
         val mediaUrl = when (attachment) {
           is AttachedImage -> attachment.url
           is AttachedVideo -> attachment.variants.sortedByDescending { it.bitRate }.firstOrNull()?.url
+          else -> error("unsupported attachment: $attachment")
         }
         echo("[$index] $mediaUrl")
       }
