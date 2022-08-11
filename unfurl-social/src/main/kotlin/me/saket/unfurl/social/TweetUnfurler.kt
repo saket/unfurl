@@ -32,10 +32,6 @@ class TweetUnfurler(private val bearerToken: String) : UnfurlerExtension {
   private val moshi = Moshi.Builder().build()
 
   override fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
-    if (!url.host.contains("twitter.com")) {
-      return null
-    }
-
     val tweetId = TweetLinkRegex.parseTweetId(url) ?: return null
     val request = okhttp3.Request.Builder()
       .url(
@@ -140,6 +136,12 @@ class TweetUnfurler(private val bearerToken: String) : UnfurlerExtension {
     }
     return this
   }
+
+  companion object {
+    fun isTweetUrl(url: HttpUrl): Boolean {
+      return TweetLinkRegex.parseTweetId(url) != null
+    }
+  }
 }
 
 @JsonClass(generateAdapter = true)
@@ -198,6 +200,10 @@ internal object TweetLinkRegex {
   private val regex = Regex("^/(?:\\w+)/status/(?<id>[\\w\\d]+)\$")
 
   fun parseTweetId(url: HttpUrl): String? {
+    if (!url.host.contains("twitter.com")) {
+      return null
+    }
+
     val result = regex.find(url.encodedPath) ?: return null
     return result.groups["id"]?.value ?: return null
   }

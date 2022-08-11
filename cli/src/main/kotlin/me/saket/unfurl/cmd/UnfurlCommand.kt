@@ -8,6 +8,7 @@ import com.github.ajalt.mordant.animation.textAnimation
 import com.github.ajalt.mordant.markdown.Markdown
 import com.github.ajalt.mordant.rendering.TextColors.gray
 import com.github.ajalt.mordant.rendering.TextColors.green
+import com.github.ajalt.mordant.rendering.TextColors.yellow
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.coroutines.Dispatchers.IO
@@ -35,7 +36,7 @@ fun main(args: Array<String>) {
 class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val url: String by argument("url")
   private val twitterToken: String? by option("-t", "--twitter-token", envvar = "unfurler_twitter_token")
-  private val debug: Boolean by option("-d").flag(default = false)
+  private val debug: Boolean by option("-d", "--debug").flag(default = false)
 
   private val terminal = Terminal()
   private val maxWidthOfTableColumn = 52
@@ -51,15 +52,16 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       extensions = listOfNotNull(twitterToken?.let(::TweetUnfurler)),
       logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp
     )
-
-    val unfurled = withProgressAnimation { unfurler.unfurl(url) }
+    val unfurled = withProgressAnimation {
+      unfurler.unfurl(url)
+    }
     if (unfurled == null) {
       echo("Couldn't unfurl", err = true)
     } else {
       echo()
       when (val content = unfurled.contentPreview) {
         is TweetContentPreview -> printTweet(content)
-        null -> printGenericLink(unfurled)
+        else -> printGenericLink(unfurled)
       }
       echo()
     }
@@ -135,6 +137,10 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
         }
       }
     )
+
+    if (TweetUnfurler.isTweetUrl(unfurled.url)) {
+      echo(yellow("\nTweets can't be fully unfurled without a Twitter API token.\nYou can provide one using --twitter-token option or an 'unfurler_twitter_token' env variable."))
+    }
   }
 
   private fun String.breakLines(): String {

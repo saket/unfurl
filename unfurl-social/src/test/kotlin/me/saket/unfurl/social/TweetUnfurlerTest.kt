@@ -11,14 +11,22 @@ import org.junit.Test
 import java.time.ZonedDateTime
 
 class TweetUnfurlerTest {
-  private val unfurler = Unfurler(
-    extensions = listOf(
-      TweetUnfurler(bearerToken = System.getenv("unfurler_twitter_token") ?: error("missing api token"))
-    )
-  )
+  private fun unfurler(twitter: TweetUnfurler? = tweetUnfurler()): Unfurler {
+    return Unfurler(extensions = listOfNotNull(twitter))
+  }
+
+  private fun tweetUnfurler(): TweetUnfurler {
+    val token = System.getenv("unfurler_twitter_token") ?: error("missing api token")
+    return TweetUnfurler(bearerToken = token)
+  }
+
+  @Test fun `ignore non-twitter links`() {
+    val unfurled = unfurler(twitter = null).unfurl("https://dog.ceo")
+    assertThat(unfurled).isNull()
+  }
 
   @Test fun `tweet with text`() {
-    val unfurled = unfurler.unfurl("https://twitter.com/ElspethEastman/status/777579297515057152")
+    val unfurled = unfurler().unfurl("https://twitter.com/ElspethEastman/status/777579297515057152")
     assertThat(unfurled?.contentPreview).isEqualTo(
       TweetContentPreview(
         authorUsername = "ElspethEastman",
@@ -38,7 +46,7 @@ class TweetUnfurlerTest {
   }
 
   @Test fun `tweet with one image`() {
-    val unfurled = unfurler.unfurl("https://twitter.com/new_cheats_news/status/1556727895778856960")
+    val unfurled = unfurler().unfurl("https://twitter.com/new_cheats_news/status/1556727895778856960")
     assertThat(unfurled?.contentPreview).isEqualTo(
       TweetContentPreview(
         authorUsername = "new_cheats_news",
@@ -56,7 +64,7 @@ class TweetUnfurlerTest {
   }
 
   @Test fun `tweet with one video`() {
-    val unfurled = unfurler.unfurl("https://twitter.com/RonFilipkowski/status/1552092292537880576")
+    val unfurled = unfurler().unfurl("https://twitter.com/RonFilipkowski/status/1552092292537880576")
     assertThat(unfurled?.contentPreview).isEqualTo(
       TweetContentPreview(
         authorUsername = "RonFilipkowski",
@@ -98,7 +106,7 @@ class TweetUnfurlerTest {
   }
 
   @Test fun `tweet with multiple images`() {
-    val unfurled = unfurler.unfurl("https://twitter.com/alex_albon/status/1554829547006111749?s=21")
+    val unfurled = unfurler().unfurl("https://twitter.com/alex_albon/status/1554829547006111749?s=21")
     assertThat(unfurled?.contentPreview).isEqualTo(
       TweetContentPreview(
         authorUsername = "alex_albon",
@@ -120,7 +128,7 @@ class TweetUnfurlerTest {
   }
 
   @Test fun `tweet with a link`() {
-    val unfurled = unfurler.unfurl("https://mobile.twitter.com/refsrc/status/1548981583234736128")
+    val unfurled = unfurler().unfurl("https://mobile.twitter.com/refsrc/status/1548981583234736128")
     assertThat(unfurled?.contentPreview).isEqualTo(
       TweetContentPreview(
         authorUsername = "refsrc",
@@ -136,7 +144,7 @@ class TweetUnfurlerTest {
   }
 
   @Test fun retweet() {
-    val unfurled = unfurler.unfurl("https://mobile.twitter.com/refsrc/status/1555528336331247620")
+    val unfurled = unfurler().unfurl("https://mobile.twitter.com/refsrc/status/1555528336331247620")
     assertThat(unfurled?.contentPreview).isEqualTo(
       TweetContentPreview(
         authorUsername = "refsrc",
