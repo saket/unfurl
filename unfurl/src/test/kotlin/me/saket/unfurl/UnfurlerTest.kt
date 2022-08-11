@@ -15,14 +15,7 @@ import java.time.Duration
 @RunWith(TestParameterInjector::class)
 class UnfurlerTest {
   private val server = MockWebServer()
-  private val unfurler = Unfurler(
-    httpClient = Unfurler.defaultOkHttpClient()
-      .newBuilder()
-      .callTimeout(Duration.ofSeconds(1))
-      .connectTimeout(Duration.ofSeconds(1))
-      .readTimeout(Duration.ofSeconds(1))
-      .build()
-  )
+  private val unfurler = Unfurler()
 
   @Test fun unfurl(@TestParameter(valuesProvider = TestInputProvider::class) input: TestInput) {
     server.enqueue(
