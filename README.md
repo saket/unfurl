@@ -19,12 +19,12 @@ UnfurlResult(
 
 ```kotlin
 val unfurler = Unfurler(
-  delegates = listOf(TweetUnfurler(), ...)
+  extensions = listOf(TweetUnfurler(), ...)
 )
 ```
 ```groovy
-implementation "me.saket.unfurl:unfurl:1.6.0"
-implementation "me.saket.unfurl:unfurl-social:1.6.0" // For TweetUnfurler.
+implementation "me.saket.unfurl:unfurl:1.7.0"
+implementation "me.saket.unfurl:unfurl-social:1.7.0" // For TweetUnfurler.
 ```
 
 ### cli
