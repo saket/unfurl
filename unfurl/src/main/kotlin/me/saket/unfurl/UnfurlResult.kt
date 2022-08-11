@@ -17,7 +17,7 @@ data class UnfurlResult(
 ) {
 
   /**
-   * Additional meta data that can be populated by extensions.
+   * Additional metadata that can be populated by extensions.
    * See `TweetContentPreview` for an example.
    */
   interface ContentPreview
