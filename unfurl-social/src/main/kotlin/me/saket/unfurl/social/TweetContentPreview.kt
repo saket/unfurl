@@ -1,6 +1,7 @@
 package me.saket.unfurl.social
 
 import me.saket.unfurl.UnfurlResult
+import me.saket.unfurl.social.TweetContentPreview.AttachedVideo.VideoVariant
 import okhttp3.HttpUrl
 import okhttp3.MediaType
 import java.time.ZonedDateTime
@@ -31,4 +32,12 @@ data class TweetContentPreview(
       val url: HttpUrl,
     )
   }
+}
+
+fun List<VideoVariant>.highestQuality(): VideoVariant {
+  return sortedByDescending { it.bitRate }.first()
+}
+
+fun List<VideoVariant>.lowestQuality(): VideoVariant {
+  return sortedBy { it.bitRate }.first()
 }
