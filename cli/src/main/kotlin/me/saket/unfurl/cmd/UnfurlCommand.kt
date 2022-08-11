@@ -6,8 +6,8 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.animation.textAnimation
 import com.github.ajalt.mordant.markdown.Markdown
-import com.github.ajalt.mordant.rendering.TextColors
-import com.github.ajalt.mordant.rendering.TextColors.blue
+import com.github.ajalt.mordant.rendering.TextColors.gray
+import com.github.ajalt.mordant.rendering.TextColors.green
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.coroutines.Dispatchers.IO
@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
 class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val url: String by argument("url")
   private val twitterToken: String? by option("-t", "--twitter-token", envvar = "unfurler_twitter_token")
-  private val debug: Boolean by option().flag(default = false)
+  private val debug: Boolean by option("-d").flag(default = false)
 
   private val terminal = Terminal()
   private val maxWidthOfTableColumn = 52
@@ -56,18 +56,19 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     if (unfurled == null) {
       echo("Couldn't unfurl", err = true)
     } else {
-      echo("")
+      echo()
       when (val content = unfurled.contentPreview) {
         is TweetContentPreview -> printTweet(content)
         null -> printGenericLink(unfurled)
       }
+      echo()
     }
   }
 
   private suspend fun <T> withProgressAnimation(block: () -> T): T {
     val frames = "⣾⣽⣻⢿⡿⣟⣯⣷"
     val animation = terminal.textAnimation<Int> { frame ->
-      blue(frames[frame % frames.length].toString())
+      green(frames[frame % frames.length].toString())
     }
 
     return coroutineScope {
@@ -90,7 +91,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   }
 
   private fun printTweet(tweet: TweetContentPreview) {
-    terminal.println(
+    echo(
       table {
         body {
           row("Author", "${tweet.authorProfileName} (@${tweet.authorUsername})")
@@ -117,15 +118,14 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
         }
       }
     )
+    echo(gray("(Your terminal may or may not support hyperlinks)"))
   }
 
   private fun printGenericLink(unfurled: UnfurlResult) {
-    val wasUrlExpanded = url.removeSuffix("/") != unfurled.url.toString().removeSuffix("/")
-
-    terminal.println(
+    echo(
       table {
         body {
-          if (wasUrlExpanded) {
+          if (url.removeSuffix("/") != unfurled.url.toString().removeSuffix("/")) {
             row("URL", unfurled.url.ellipsizeAndHyperlink())
           }
           row("Title", unfurled.title?.breakLines())
@@ -141,6 +141,8 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     return chunked(maxWidthOfTableColumn).joinToString(separator = "\n")
   }
 
+  // FYI not all terminals support hyperlinks. At the time
+  // of writing this, iTerm does but macOS terminal does not.
   private fun HttpUrl.ellipsizeAndHyperlink(): Markdown {
     val ellipsized = toString().let {
       if (it.length > maxWidthOfTableColumn) "${it.take(maxWidthOfTableColumn - 1)}…" else it
