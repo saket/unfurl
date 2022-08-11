@@ -91,7 +91,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   }
 
   private fun printTweet(tweet: TweetContentPreview) {
-    echo(
+    terminal.println(
       table {
         body {
           row("Author", "${tweet.authorProfileName} (@${tweet.authorUsername})")
@@ -122,7 +122,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   }
 
   private fun printGenericLink(unfurled: UnfurlResult) {
-    echo(
+    terminal.println(
       table {
         body {
           if (url.removeSuffix("/") != unfurled.url.toString().removeSuffix("/")) {
