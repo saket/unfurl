@@ -139,7 +139,8 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     )
 
     if (TweetUnfurler.isTweetUrl(unfurled.url)) {
-      echo(yellow("\nTweets can't be fully unfurled without a Twitter API token.\nYou can provide one using --twitter-token option or an 'unfurler_twitter_token' env variable."))
+      echo(yellow("\nTweets can't be fully unfurled without a Twitter API token.\nYou can provide " +
+        "one using --twitter-token option or an 'unfurler_twitter_token' env variable."))
     }
   }
 
