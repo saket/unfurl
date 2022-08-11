@@ -144,7 +144,9 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   }
 
   private fun String.breakLines(): String {
-    return chunked(maxWidthOfTableColumn).joinToString(separator = "\n")
+    return split("\n")
+      .flatMap { it.chunked(maxWidthOfTableColumn) }
+      .joinToString(separator = "\n")
   }
 
   // FYI not all terminals support hyperlinks. At the time
