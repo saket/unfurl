@@ -26,6 +26,7 @@ import me.saket.unfurl.social.TweetUnfurler
 import me.saket.unfurl.social.highestQuality
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.OkHttpClient
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -48,9 +49,11 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       return@runBlocking
     }
 
+    val okHttp = Unfurler.defaultOkHttpClient()
     val unfurler = Unfurler(
       extensions = listOfNotNull(twitterToken?.let(::TweetUnfurler)),
-      logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp
+      logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp,
+      httpClient = okHttp
     )
     val unfurled = withProgressAnimation {
       unfurler.unfurl(url)
@@ -65,6 +68,8 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       }
       echo()
     }
+
+    okHttp.forceShutDown()
   }
 
   private suspend fun <T> withProgressAnimation(block: () -> T): T {
@@ -161,4 +166,11 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       hyperlinks = true,
     )
   }
+}
+
+private fun OkHttpClient.forceShutDown() {
+  // OkHttp uses non-daemon threads which will prevent the JVM from exiting until they time out.
+  // https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/#shutdown-isnt-necessary
+  dispatcher.executorService.shutdown()
+  connectionPool.evictAll()
 }

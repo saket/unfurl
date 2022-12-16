@@ -42,7 +42,7 @@ class Unfurler(
   }
 
   companion object {
-    internal fun defaultOkHttpClient(): OkHttpClient {
+    fun defaultOkHttpClient(): OkHttpClient {
       return OkHttpClient.Builder()
         .followRedirects(true)
         .followSslRedirects(true)
