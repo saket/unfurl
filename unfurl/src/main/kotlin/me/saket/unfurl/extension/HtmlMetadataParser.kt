@@ -20,8 +20,8 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
   }
 
   private fun parseTitle(document: Document): String? {
-    val linkTitle = metaTag(document, "twitter:title", useAbsoluteUrl = false)
-      ?: metaTag(document, "og:title", useAbsoluteUrl = false)
+    val linkTitle = metaTag(document, "twitter:title")
+      ?: metaTag(document, "og:title")
       ?: document.title().nullIfBlank()
 
     if (linkTitle == null) {
@@ -31,8 +31,9 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
   }
 
   private fun parseDescription(document: Document): String? {
-    val linkTitle = metaTag(document, "twitter:description", useAbsoluteUrl = false)
-      ?: metaTag(document, "og:description", useAbsoluteUrl = false)
+    val linkTitle = metaTag(document, "twitter:description")
+      ?: metaTag(document, "og:description")
+      ?: metaTag(document, "description")
 
     if (linkTitle == null) {
       logger.log("couldn't find any description for ${document.baseUri()}.")
@@ -43,10 +44,10 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
   private fun parseThumbnailUrl(document: Document): HttpUrl? {
     // Twitter's image tag is preferred over facebook's
     // because websites seem to give better images for twitter.
-    val thumbnailUrl = metaTag(document, "twitter:image", useAbsoluteUrl = true)
-      ?: metaTag(document, "og:image", useAbsoluteUrl = true)
-      ?: metaTag(document, "twitter:image:src", useAbsoluteUrl = true)
-      ?: metaTag(document, "og:image:secure_url", useAbsoluteUrl = true)
+    val thumbnailUrl = metaTag(document, "twitter:image", isUrl = true)
+      ?: metaTag(document, "og:image", isUrl = true)
+      ?: metaTag(document, "twitter:image:src", isUrl = true)
+      ?: metaTag(document, "og:image:secure_url", isUrl = true)
 
     // So... scheme-less URLs are a thing.
     val needsScheme = thumbnailUrl != null && thumbnailUrl.startsWith("//")
@@ -69,14 +70,14 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
       .build()
   }
 
-  private fun metaTag(document: Document?, attr: String, useAbsoluteUrl: Boolean): String? {
-    val names = document!!.select("meta[name=$attr]")
+  private fun metaTag(document: Document, attr: String, isUrl: Boolean = false): String? {
+    val names = document.select("meta[name=$attr]")
     val properties = document.select("meta[property=$attr]")
 
     return sequenceOf(names, properties)
       .flatMap { it }
       .mapNotNull { element: Element ->
-        element.attr(if (useAbsoluteUrl) "abs:content" else "content").nullIfBlank()
+        element.attr(if (isUrl) "abs:content" else "content").nullIfBlank()
       }
       .firstOrNull()
   }
