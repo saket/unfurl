@@ -18,7 +18,7 @@ class UnfurlerTest {
   private val server = MockWebServer()
   private val unfurler = Unfurler()
 
-  @Test fun unfurl(@TestParameter input: TestInput) {
+  @Test fun `parse HTML correctly`(@TestParameter input: HtmlTestInput) {
     server.enqueue(
       MockResponse()
         .setHeader("Content-Type", "text/html; charset=UTF-8")
@@ -62,7 +62,7 @@ class UnfurlerTest {
 }
 
 @Suppress("EnumEntryName", "unused")
-enum class TestInput(
+enum class HtmlTestInput(
   val url: String,
   val htmlFileName: String,
   val expected: (serverUrl: HttpUrl) -> UnfurlResult?
