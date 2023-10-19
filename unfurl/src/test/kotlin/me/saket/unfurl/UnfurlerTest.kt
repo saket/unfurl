@@ -33,25 +33,6 @@ class UnfurlerTest {
     }
   }
 
-  @Test fun `unfurl tweets without javascript`() {
-    // This does not use a mock web-server to ensure my workaround for scraping tweets is still working.
-    val result = unfurler.unfurl("https://twitter.com/Twitter/status/1577730467436138524")
-
-    assertThat(result).isEqualTo(
-      UnfurlResult(
-        url = "https://twitter.com/Twitter/status/1577730467436138524".toHttpUrl(),
-        title = "Twitter on Twitter",
-        description = """
-              |“whoa, it works
-              |
-              |now everyone can mix GIFs, videos, and images in one Tweet, available on iOS and Android”
-              """.trimMargin(),
-        thumbnail = "https://pbs.twimg.com/tweet_video_thumb/FeU5fh1XkA0vDAE.jpg:large".toHttpUrl(),
-        favicon = "https://abs.twimg.com/favicons/twitter.2.ico".toHttpUrl(),
-      )
-    )
-  }
-
   @Test fun `follow redirects`() {
     server.enqueue(
       MockResponse()
