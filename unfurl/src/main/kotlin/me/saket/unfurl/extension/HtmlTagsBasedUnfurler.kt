@@ -17,6 +17,12 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
 
   private fun UnfurlerScope.downloadHtml(url: HttpUrl): Document? {
     val request: Request = Request.Builder()
+      // Some websites will deny empty/unknown user agents,
+      // probably in an attempt to prevent scrapers?
+      .header(
+        "User-Agent",
+        "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Mobile Safari/537.36"
+      )
       .url(url)
       .build()
 

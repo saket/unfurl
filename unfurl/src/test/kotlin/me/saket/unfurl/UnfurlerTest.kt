@@ -33,6 +33,19 @@ class UnfurlerTest {
     }
   }
 
+  @Test fun `websites that deny requests without a recognizable user-agent`() {
+    val result = unfurler.unfurl("https://www.getproactiv.ca/pdp?productcode=842944100695")
+    assertThat(result).isEqualTo(
+      UnfurlResult(
+        url = "https://www.getproactiv.ca/pdp?productcode=842944100695".toHttpUrl(),
+        title = "Proactiv Solution® Repairing Treatment | Proactiv® Products",
+        description = "Our Repairing Treatment is a leave-on treatment formulated with prescription-grade benzoyl peroxide designed to penetrate pores to kill acne-causing bacteria.",
+        favicon = "https://www.getproactiv.ca/favicon.ico".toHttpUrl(),
+        thumbnail = "https://cdn-tp3.mozu.com/30113-50629/cms/50629/files/f050a010-0420-4a53-b898-d4c08db77eb9".toHttpUrl(),
+      )
+    )
+  }
+
   @Test fun `follow redirects`() {
     server.enqueue(
       MockResponse()
