@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalStdlibApi::class)
+@file:Suppress("PropertyName")
 
 package me.saket.unfurl.social
 
@@ -21,16 +22,17 @@ import org.jsoup.parser.Parser as JsoupParser
 
 /**
  * Because Twitter uses javascript for rendering its webpages, [HtmlTagsBasedUnfurler]
- * isn't able to extract all metadata of tweets. TweetUnfurler can be used as an alternative.
+ * isn't able to extract metadata from tweets. TweetUnfurler can be used as an alternative.
  *
  * FYI rate-limiting isn't handled yet.
  *
- * @param bearerToken can be obtained by signing up for a developer account at
- * [https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api].
+ * @param bearerToken can be obtained by signing up for a
+ * [developer account](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api).
  */
 class TweetUnfurler(private val bearerToken: String) : UnfurlerExtension {
   private val moshi = Moshi.Builder().build()
 
+  @OptIn(ExperimentalStdlibApi::class)
   override fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
     val tweetId = TweetLinkRegex.parseTweetId(url) ?: return null
     val request = okhttp3.Request.Builder()
