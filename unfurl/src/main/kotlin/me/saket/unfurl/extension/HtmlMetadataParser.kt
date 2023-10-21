@@ -12,8 +12,8 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
   fun parse(url: HttpUrl, document: Document): UnfurlResult {
     return UnfurlResult(
       url = url,
-      title = parseTitle(document),
-      description = parseDescription(document),
+      title = parseTitle(document)?.trim(),
+      description = parseDescription(document)?.trim(),
       favicon = parseFaviconUrl(document) ?: fallbackFaviconUrl(url),
       thumbnail = parseThumbnailUrl(document)
     )
