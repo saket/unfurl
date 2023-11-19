@@ -46,6 +46,19 @@ class UnfurlerTest {
     )
   }
 
+  @Test fun `websites that deny requests without content type and language headers`() {
+    val result = unfurler.unfurl("https://nitter.net/saketme/status/1716330453311877183")
+    assertThat(result).isEqualTo(
+      UnfurlResult(
+        url = "https://nitter.net/saketme/status/1716330453311877183".toHttpUrl(),
+        title = "saket@androiddev.social (@saketme)",
+        description = "When the sole developer of a project starts using \"we\" instead of \"I\" in their code comments.",
+        favicon = "https://nitter.net/apple-touch-icon.png".toHttpUrl(),
+        thumbnail = "https://nitter.net/pic/media%2FF9GhXLmXYAAXIcb.png".toHttpUrl(),
+      )
+    )
+  }
+
   @Test fun `follow redirects`() {
     server.enqueue(
       MockResponse()
