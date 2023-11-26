@@ -1,0 +1,3 @@
+# Prevent GitHub from labeling this as an HTML library.
+# Doc: https://github.com/github/linguist/blob/master/docs/overrides.md
+unfurl/src/test/resources/* linguist-vendored
