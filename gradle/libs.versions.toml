@@ -5,12 +5,9 @@ dokka = "1.9.10"
 ksoup = "0.0.6"
 vanniktect-publish = "0.25.3"
 ktor = "2.3.6"
-
-
 compileSdk = "34"
 minSdk = "24"
 libraryVersion = "1.8.0"
-
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
