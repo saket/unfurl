@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "unfurl-kmp"
+rootProject.name = "unfurl"
 include(":unfurl")
