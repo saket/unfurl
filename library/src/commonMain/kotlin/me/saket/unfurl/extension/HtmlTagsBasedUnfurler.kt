@@ -31,7 +31,7 @@ public open class HtmlTagsBasedUnfurler : UnfurlerExtension {
         header(HttpHeaders.Accept, "text/html")
         header(HttpHeaders.AcceptLanguage, "en-US,en;q=0.5")
       }
-      if (response.contentType() == ContentType.Text.Html) {
+      if (response.contentType()?.match(ContentType.Text.Html) == true) {
         Ksoup.parse(
           bufferReader = BufferReader(response.readBytes()),
           baseUri = response.request.url.toString(),
