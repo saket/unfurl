@@ -1,18 +1,18 @@
 package me.saket.unfurl
 
-import okhttp3.HttpUrl
+import io.ktor.http.Url
 
 /**
  * @param url May or may not be equal to the original URL used with [Unfurler.unfurl].
  * This can happen in situations where HTTP 3xx redirects are followed. For example,
  * `https://youtu.be/foo` will redirect to `https://www.youtube.com/watch?v=foo`.
  */
-data class UnfurlResult(
-  val url: HttpUrl,
+public data class UnfurlResult(
+  val url: Url,
   val title: String?,
   val description: String?,
-  val favicon: HttpUrl?,
-  val thumbnail: HttpUrl?,
+  val favicon: Url?,
+  val thumbnail: Url?,
   val contentPreview: ContentPreview? = null,
 ) {
 
@@ -20,5 +20,5 @@ data class UnfurlResult(
    * Additional metadata that can be populated by extensions.
    * See `TweetContentPreview` for an example.
    */
-  interface ContentPreview
+  public interface ContentPreview
 }

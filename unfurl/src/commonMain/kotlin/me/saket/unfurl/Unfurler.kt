@@ -1,28 +1,28 @@
 package me.saket.unfurl
 
+import io.ktor.client.HttpClient
+import io.ktor.http.Url
 import me.saket.unfurl.extension.HtmlTagsBasedUnfurler
 import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
+import me.saket.unfurl.extension.toHttpUrlOrNull
 import me.saket.unfurl.internal.NullableLruCache
-import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.OkHttpClient
 
-class Unfurler(
+public class Unfurler(
   cacheSize: Int = 100,
   extensions: List<UnfurlerExtension> = emptyList(),
-  val httpClient: OkHttpClient = defaultOkHttpClient(),
-  val logger: UnfurlLogger = UnfurlLogger.Println,
+  public val httpClient: HttpClient = defaultHttpClient(),
+  public val logger: UnfurlLogger = UnfurlLogger.Println,
 ) {
   private val extensions = extensions + HtmlTagsBasedUnfurler()
   private val cache = NullableLruCache<String, UnfurlResult?>(cacheSize)
 
   private val extensionScope = object : UnfurlerScope {
-    override val httpClient: OkHttpClient get() = this@Unfurler.httpClient
+    override val httpClient: HttpClient get() = this@Unfurler.httpClient
     override val logger: UnfurlLogger get() = this@Unfurler.logger
   }
 
-  fun unfurl(url: String): UnfurlResult? {
+  public fun unfurl(url: String): UnfurlResult? {
     return cache.computeIfAbsent(url) {
       try {
         url.toHttpUrlOrNull()?.let { httpUrl ->
@@ -37,16 +37,15 @@ class Unfurler(
     }
   }
 
-  fun unfurl(url: HttpUrl): UnfurlResult? {
+  public fun unfurl(url: Url): UnfurlResult? {
     return unfurl(url.toString())
   }
 
-  companion object {
-    fun defaultOkHttpClient(): OkHttpClient {
-      return OkHttpClient.Builder()
-        .followRedirects(true)
-        .followSslRedirects(true)
-        .build()
+  public companion object {
+    public fun defaultHttpClient(): HttpClient {
+      return HttpClient(provideHttpClientEngine()) {
+        followRedirects = true
+      }
     }
   }
 }

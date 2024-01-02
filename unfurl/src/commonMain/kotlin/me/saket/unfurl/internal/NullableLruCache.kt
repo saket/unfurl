@@ -18,6 +18,6 @@ internal class NullableLruCache<K : Any, V>(maxSize: Int) {
 
   sealed class Optional<out T> {
     data class Some<out T : Any>(val value: T) : Optional<T>()
-    object None : Optional<Nothing>()
+    data object None : Optional<Nothing>()
   }
 }

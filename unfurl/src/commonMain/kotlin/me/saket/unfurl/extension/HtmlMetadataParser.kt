@@ -1,19 +1,20 @@
 package me.saket.unfurl.extension
 
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
+import io.ktor.http.URLBuilder
+import io.ktor.http.Url
+import io.ktor.http.appendEncodedPathSegments
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
-import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 
 internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
 
-  fun parse(url: HttpUrl, document: Document): UnfurlResult {
+  fun parse(url: Url, document: Document): UnfurlResult {
     return UnfurlResult(
       url = url,
-      title = parseTitle(document)?.trim(),
-      description = parseDescription(document)?.trim(),
+      title = parseTitle(document),
+      description = parseDescription(document),
       favicon = parseFaviconUrl(document) ?: fallbackFaviconUrl(url),
       thumbnail = parseThumbnailUrl(document)
     )
@@ -41,7 +42,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return linkTitle
   }
 
-  private fun parseThumbnailUrl(document: Document): HttpUrl? {
+  private fun parseThumbnailUrl(document: Document): Url? {
     // Twitter's image tag is preferred over facebook's
     // because websites seem to give better images for twitter.
     val thumbnailUrl = metaTag(document, "twitter:image", isUrl = true)
@@ -54,7 +55,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return (if (needsScheme) "https:$thumbnailUrl" else thumbnailUrl)?.toHttpUrlOrNull()
   }
 
-  private fun parseFaviconUrl(document: Document): HttpUrl? {
+  private fun parseFaviconUrl(document: Document): Url? {
     val faviconUrl = linkRelTag(document, "apple-touch-icon")
       ?: linkRelTag(document, "apple-touch-icon-precomposed")
       ?: linkRelTag(document, "shortcut icon")
@@ -62,11 +63,9 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return faviconUrl?.toHttpUrlOrNull()
   }
 
-  private fun fallbackFaviconUrl(url: HttpUrl): HttpUrl {
-    return HttpUrl.Builder()
-      .scheme(url.scheme)
-      .host(url.host)
-      .encodedPath("/favicon.ico")
+  private fun fallbackFaviconUrl(url: Url): Url {
+    return URLBuilder(protocol = url.protocol, host = url.host)
+      .appendEncodedPathSegments("/favicon.ico")
       .build()
   }
 

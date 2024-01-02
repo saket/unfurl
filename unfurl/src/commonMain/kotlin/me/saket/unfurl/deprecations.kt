@@ -1,7 +1,7 @@
 package me.saket.unfurl
 
+import io.ktor.client.HttpClient
 import me.saket.unfurl.delegates.UnfurlerDelegate
-import okhttp3.OkHttpClient
 
 @Deprecated(
   message = """"delegates" parameter has been renamed to "extensions"""",
@@ -10,11 +10,11 @@ import okhttp3.OkHttpClient
     "me.saket.unfurl.Unfurler"
   ),
 )
-fun Unfurler(
+public fun Unfurler(
   cacheSize: Int = 100,
   delegates: List<UnfurlerDelegate>,
-  httpClient: OkHttpClient = Unfurler.defaultOkHttpClient(),
-) = Unfurler(
+  httpClient: HttpClient = Unfurler.defaultHttpClient(),
+): Unfurler = Unfurler(
   cacheSize = cacheSize,
   extensions = delegates,
   httpClient = httpClient,
@@ -27,10 +27,10 @@ fun Unfurler(
     "me.saket.unfurl.Unfurler"
   ),
 )
-fun Unfurler(
+public fun Unfurler(
   cacheSize: Int = 100,
   delegates: List<UnfurlerDelegate>,
-) = Unfurler(
+): Unfurler = Unfurler(
   cacheSize = cacheSize,
   extensions = delegates,
 )
@@ -42,8 +42,8 @@ fun Unfurler(
     "me.saket.unfurl.Unfurler"
   ),
 )
-fun Unfurler(
+public fun Unfurler(
   delegates: List<UnfurlerDelegate>
-) = Unfurler(
+): Unfurler = Unfurler(
   extensions = delegates,
 )

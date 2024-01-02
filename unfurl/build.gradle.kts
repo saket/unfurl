@@ -1,15 +1,76 @@
 plugins {
-  id("java-library")
-  kotlin("jvm")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.dokka)
+    id("maven-publish")
 }
-apply(plugin = "com.vanniktech.maven.publish")
 
-dependencies {
-  api("com.squareup.okhttp3:okhttp:4.9.0")  // Updating to 5.x? See cli/build.gradle.kts.
-  api("org.jsoup:jsoup:1.16.1")
+group = "me.saket.unfurl"
+version = libs.versions.libraryVersion.get()
 
-  testImplementation("junit:junit:4.13.2")
-  testImplementation("com.google.truth:truth:1.1.3")
-  testImplementation("com.google.testparameterinjector:test-parameter-injector:1.8")
-  testImplementation("com.squareup.okhttp3:mockwebserver:4.10.0")
+@OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+kotlin {
+    explicitApi()
+
+    jvm()
+
+    androidTarget {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
+    
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach {
+        it.binaries.framework {
+            baseName = "unfurl"
+            isStatic = true
+        }
+    }
+
+    sourceSets {
+        sourceSets {
+            commonMain.dependencies {
+                implementation(libs.ktor.client.core)
+                implementation(libs.ksoup)
+            }
+            commonTest.dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.ktor.client.mock)
+            }
+
+            jvmMain.dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
+
+            jvmTest.dependencies {
+                implementation(libs.kotlin.test)
+            }
+
+            androidMain.dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
+
+            iosMain.dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
+        }
+    }
+}
+
+android {
+    namespace = "me.saket.unfurl"
+    compileSdk = libs.versions.compileSdk.get().toInt()
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
