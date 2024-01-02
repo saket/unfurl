@@ -28,6 +28,7 @@ kotlin {
       commonMain.dependencies {
         implementation(libs.ktor.client.core)
         implementation(libs.ksoup)
+        implementation(libs.cache4k)
       }
       commonTest.dependencies {
         implementation(libs.ktor.client.mock)

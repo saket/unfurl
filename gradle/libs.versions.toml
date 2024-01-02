@@ -8,7 +8,8 @@ dokka = "1.9.10"
 ksoup = "0.1.2" # https://github.com/fleeksoft/ksoup/releases
 mavenPublish = "0.25.3"
 ktor = "2.3.7"
-assertk = "0.28.0"
+assertk = "0.28.0"  # https://github.com/willowtreeapps/assertk/releases
+cache4k = "0.12.0"  # https://github.com/ReactiveCircus/cache4k/releases
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -25,3 +26,4 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
+cache4k = { module = "io.github.reactivecircus.cache4k:cache4k", version.ref = "cache4k" }
