@@ -40,9 +40,9 @@ public open class HtmlTagsBasedUnfurler : UnfurlerExtension {
 
           if (contentType.isHtmlText()) {
             Ksoup.parse(
-              /* in */ BufferReader(response.readBytes()),
-              /* charsetName */ null,
-              /* baseUri */ redirectedUrl.toString()
+              bufferReader = BufferReader(response.readBytes()),
+              baseUri = redirectedUrl.toString(),
+              charsetName = null,
             )
           } else {
             null

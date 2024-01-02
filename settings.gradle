@@ -1,3 +1,0 @@
-include ':cli'
-include ':unfurl'
-include ':unfurl-social'

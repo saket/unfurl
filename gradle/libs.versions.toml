@@ -1,13 +1,20 @@
 [versions]
-agp = "8.2.0-beta06"
-kotlin = "1.9.20"
-dokka = "1.9.10"
-ksoup = "0.0.6"
-vanniktect-publish = "0.25.3"
-ktor = "2.3.6"
+libraryVersion = "1.8.0"
 compileSdk = "34"
 minSdk = "24"
-libraryVersion = "1.8.0"
+agp = "8.2.0"
+kotlin = "1.9.20"
+dokka = "1.9.10"
+ksoup = "0.1.2" # https://github.com/fleeksoft/ksoup/releases
+mavenPublish = "0.25.3"
+ktor = "2.3.7"
+assertk = "0.28.0"
+
+[plugins]
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+mavenPublish = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenPublish" }
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -17,12 +24,4 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-
-[plugins]
-androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
-kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-vanniktectPublish = { id = "com.vanniktech.maven.publish.base", version.ref = "vanniktect-publish" }
+assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
