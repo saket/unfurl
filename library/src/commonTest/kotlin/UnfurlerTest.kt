@@ -1,25 +1,25 @@
 package me.saket.unfurl
 
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.engine.mock.respondRedirect
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.Url
 import io.ktor.http.headersOf
 import io.ktor.utils.io.core.use
 import me.saket.unfurl.internal.toUrl
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class UnfurlerTest {
   private val unfurler = Unfurler()
 
-  @Test
-  fun `parse HTML correctly`() {
-    parameterizedTest(enumValues<HtmlTestInput>()) { input ->
-      val mockEngine = MockEngine.invoke {
+  @Test fun `parse HTML correctly`() {
+    HtmlTestInput.entries.forEach { input ->
+      val mockEngine = MockEngine {
         respond(
           content = readResourceFile(input.htmlFileName),
           status = HttpStatusCode.OK,
@@ -28,19 +28,16 @@ class UnfurlerTest {
       }
       val server = HttpClient(mockEngine)
       server.use {
-        val localUrl = input.url.toUrl()
-        val result = unfurler.unfurl(localUrl)
-        assertEquals(result, input.expected("".toUrl())?.copy(url = localUrl))
-        // TODO: Clear server request queue
+        val result = unfurler.unfurl(input.url)
+        assertThat(result).isEqualTo(input.expected())
       }
     }
   }
 
-  @Test
-  fun `websites that deny requests without a recognizable user-agent`() {
+  @Test fun `websites that deny requests without a recognizable user-agent`() {
     val result = unfurler.unfurl("https://www.getproactiv.ca/pdp?productcode=842944100695")
-    assertEquals(
-      result, UnfurlResult(
+    assertThat(result).isEqualTo(
+      UnfurlResult(
         url = "https://www.getproactiv.ca/pdp?productcode=842944100695".toUrl(),
         title = "Proactiv Solution® Repairing Treatment | Proactiv® Products",
         description = "Our Repairing Treatment is a leave-on treatment formulated with prescription-grade benzoyl peroxide designed to penetrate pores to kill acne-causing bacteria.",
@@ -50,32 +47,39 @@ class UnfurlerTest {
     )
   }
 
-  @Test
-  fun `follow redirects`() {
-    val mockEngine = MockEngine.invoke {
-      respond(
-        content = "",
-        status = HttpStatusCode.SeeOther,
-        headers = headersOf(HttpHeaders.Location, "https://www.youtube.com/watch?v=o-YBDTqX_ZU&feature=youtu.be")
+  @Test fun `websites that deny requests without content type and language headers`() {
+    val result = unfurler.unfurl("https://nitter.net/saketme/status/1716330453311877183")
+    assertThat(result).isEqualTo(
+      UnfurlResult(
+        url = "https://nitter.net/saketme/status/1716330453311877183".toUrl(),
+        title = "saket@androiddev.social (@saketme)",
+        description = "When the sole developer of a project starts using \"we\" instead of \"I\" in their code comments.",
+        favicon = "https://nitter.net/apple-touch-icon.png".toUrl(),
+        thumbnail = "https://nitter.net/pic/media%2FF9GhXLmXYAAXIcb.png".toUrl(),
       )
+    )
+  }
+
+  @Test fun `follow redirects`() {
+    val mockEngine = MockEngine.invoke {
+      respondRedirect("https://www.youtube.com/watch?v=o-YBDTqX_ZU&feature=youtu.be")
     }
     val server = HttpClient(mockEngine)
     server.use {
       val result = unfurler.unfurl("/youtu.be/o-YBDTqX_ZU".toUrl())
-      assertNotNull(result)
-      // TODO: Clear server request queue
+      assertThat(result).isNotNull()
     }
   }
 }
 
-@Suppress("EnumEntryName", "unused")
+@Suppress("EnumEntryName")
 enum class HtmlTestInput(
   val url: String,
   val htmlFileName: String,
-  val expected: (serverUrl: Url) -> UnfurlResult?
+  val expected: () -> UnfurlResult?,
 ) {
   Saket_me( // Uses both OGP and twitter meta tags.
-    url = "/saket.me/great-teams-merge-fast/",
+    url = "https://saket.me/great-teams-merge-fast/",
     htmlFileName = "html_source_saket.me.html",
     expected = {
       UnfurlResult(
@@ -88,7 +92,7 @@ enum class HtmlTestInput(
     }
   ),
   Instagram_com(  // Does not use most twitter meta tags.
-    url = "/about.instagram.com",
+    url = "https://about.instagram.com",
     htmlFileName = "html_source_instagram.com.html",
     expected = {
       UnfurlResult(
@@ -101,15 +105,15 @@ enum class HtmlTestInput(
     }
   ),
   Gitless_com(  // Does not use any social tags.
-    url = "/gitless.com",
+    url = "https://gitless.com",
     htmlFileName = "html_source_gitless.com.html",
-    expected = { serverUrl ->
+    expected = {
       UnfurlResult(
         url = "https://gitless.com".toUrl(),
         title = "Gitless",
         description = "Gitless: a simple version control system built on top of Git",
         thumbnail = null,
-        favicon = "${serverUrl}favicon.ico".toUrl(),
+        favicon = "https://gitless.com/favicon.ico".toUrl(),
       )
     }
   )
@@ -120,10 +124,4 @@ fun readResourceFile(fileName: String): String {
   return ""
 //  val url = Thread.currentThread().contextClassLoader.getResource(fileName)!!
 //  return File(url.path).readText()
-}
-
-fun <T> parameterizedTest(parameters: Array<T>, testFunc: (T) -> Unit) {
-  parameters.forEach {
-    testFunc(it)
-  }
 }

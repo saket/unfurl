@@ -32,6 +32,7 @@ kotlin {
       commonTest.dependencies {
         implementation(libs.ktor.client.mock)
         implementation(libs.kotlin.test)
+        implementation(libs.assertk)
       }
       jvmMain.dependencies {
         implementation(libs.ktor.client.okhttp)
