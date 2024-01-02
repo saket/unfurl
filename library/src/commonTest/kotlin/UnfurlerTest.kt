@@ -79,7 +79,7 @@ class UnfurlerTest {
       }
     }
     val unfurler = Unfurler(httpClient = HttpClient(mockEngine))
-    val result = unfurler.unfurl("https://youtu.be/o-YBDTqX_ZU".toUrl())
+    val result = unfurler.unfurl("https://youtu.be/o-YBDTqX_ZU")
     assertThat(result).isNotNull()
   }
 }
