@@ -5,7 +5,7 @@ import io.ktor.http.Url
 import me.saket.unfurl.extension.HtmlTagsBasedUnfurler
 import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
-import me.saket.unfurl.extension.toHttpUrlOrNull
+import me.saket.unfurl.internal.toUrlOrNull
 import me.saket.unfurl.internal.NullableLruCache
 
 public class Unfurler(
@@ -25,7 +25,7 @@ public class Unfurler(
   public fun unfurl(url: String): UnfurlResult? {
     return cache.computeIfAbsent(url) {
       try {
-        url.toHttpUrlOrNull()?.let { httpUrl ->
+        url.toUrlOrNull()?.let { httpUrl ->
           extensions.asSequence()
             .mapNotNull { it.run { extensionScope.unfurl(httpUrl) } }
             .firstOrNull()

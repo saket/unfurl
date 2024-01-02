@@ -7,6 +7,7 @@ import io.ktor.http.Url
 import io.ktor.http.appendEncodedPathSegments
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
+import me.saket.unfurl.internal.toUrlOrNull
 
 internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
 
@@ -52,7 +53,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
 
     // So... scheme-less URLs are a thing.
     val needsScheme = thumbnailUrl != null && thumbnailUrl.startsWith("//")
-    return (if (needsScheme) "https:$thumbnailUrl" else thumbnailUrl)?.toHttpUrlOrNull()
+    return (if (needsScheme) "https:$thumbnailUrl" else thumbnailUrl)?.toUrlOrNull()
   }
 
   private fun parseFaviconUrl(document: Document): Url? {
@@ -60,7 +61,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
       ?: linkRelTag(document, "apple-touch-icon-precomposed")
       ?: linkRelTag(document, "shortcut icon")
       ?: linkRelTag(document, "icon")
-    return faviconUrl?.toHttpUrlOrNull()
+    return faviconUrl?.toUrlOrNull()
   }
 
   private fun fallbackFaviconUrl(url: Url): Url {

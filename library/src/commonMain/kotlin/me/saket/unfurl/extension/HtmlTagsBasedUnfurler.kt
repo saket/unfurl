@@ -14,6 +14,7 @@ import io.ktor.http.contentType
 import io.ktor.utils.io.core.use
 import kotlinx.coroutines.runBlocking
 import me.saket.unfurl.UnfurlResult
+import me.saket.unfurl.internal.toUrl
 
 public open class HtmlTagsBasedUnfurler : UnfurlerExtension {
   override fun UnfurlerScope.unfurl(url: Url): UnfurlResult? {
