@@ -10,20 +10,22 @@ mavenPublish = "0.25.3"
 ktor = "2.3.7"
 assertk = "0.28.0"  # https://github.com/willowtreeapps/assertk/releases
 cache4k = "0.12.0"  # https://github.com/ReactiveCircus/cache4k/releases
+testResources = "0.4.0"
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 mavenPublish = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenPublish" }
+testResources = { id = "com.goncalossilva.resources", version.ref = "testResources" }
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
 cache4k = { module = "io.github.reactivecircus.cache4k:cache4k", version.ref = "cache4k" }
+testResources = { module = "com.goncalossilva:resources", version.ref = "testResources" }

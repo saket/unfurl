@@ -3,6 +3,7 @@ plugins {
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.dokka)
   alias(libs.plugins.mavenPublish)
+  alias(libs.plugins.testResources)
 }
 
 group = "me.saket.unfurl"
@@ -34,6 +35,7 @@ kotlin {
         implementation(libs.ktor.client.mock)
         implementation(libs.kotlin.test)
         implementation(libs.assertk)
+        implementation(libs.testResources)
       }
       jvmMain.dependencies {
         implementation(libs.ktor.client.okhttp)

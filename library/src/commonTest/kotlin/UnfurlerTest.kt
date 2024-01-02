@@ -3,39 +3,37 @@ package me.saket.unfurl
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import com.goncalossilva.resources.Resource
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.config
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.respondRedirect
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import io.ktor.utils.io.core.use
 import me.saket.unfurl.internal.toUrl
 import kotlin.test.Test
 
 class UnfurlerTest {
-  private val unfurler = Unfurler()
-
   @Test fun `parse HTML correctly`() {
     HtmlTestInput.entries.forEach { input ->
       val mockEngine = MockEngine {
         respond(
-          content = readResourceFile(input.htmlFileName),
+          content = Resource("src/commonTest/resources/${input.htmlFileName}").readText(),
           status = HttpStatusCode.OK,
           headers = headersOf(HttpHeaders.ContentType, "text/html; charset=UTF-8")
         )
       }
-      val server = HttpClient(mockEngine)
-      server.use {
-        val result = unfurler.unfurl(input.url)
-        assertThat(result).isEqualTo(input.expected())
-      }
+      val unfurler = Unfurler(httpClient = HttpClient(mockEngine))
+      val result = unfurler.unfurl(input.url)
+      assertThat(result).isEqualTo(input.expected())
     }
   }
 
   @Test fun `websites that deny requests without a recognizable user-agent`() {
-    val result = unfurler.unfurl("https://www.getproactiv.ca/pdp?productcode=842944100695")
+    val result = Unfurler().unfurl("https://www.getproactiv.ca/pdp?productcode=842944100695")
     assertThat(result).isEqualTo(
       UnfurlResult(
         url = "https://www.getproactiv.ca/pdp?productcode=842944100695".toUrl(),
@@ -48,7 +46,7 @@ class UnfurlerTest {
   }
 
   @Test fun `websites that deny requests without content type and language headers`() {
-    val result = unfurler.unfurl("https://nitter.net/saketme/status/1716330453311877183")
+    val result = Unfurler().unfurl("https://nitter.net/saketme/status/1716330453311877183")
     assertThat(result).isEqualTo(
       UnfurlResult(
         url = "https://nitter.net/saketme/status/1716330453311877183".toUrl(),
@@ -61,19 +59,32 @@ class UnfurlerTest {
   }
 
   @Test fun `follow redirects`() {
-    val mockEngine = MockEngine.invoke {
-      respondRedirect("https://www.youtube.com/watch?v=o-YBDTqX_ZU&feature=youtu.be")
+    val mockEngine = MockEngine.config {
+      addHandler {
+        when (it.url.host) {
+          "youtu.be" -> {
+            respondRedirect(
+              location = "https://www.youtube.com/watch?v=o-YBDTqX_ZU&feature=youtu.be",
+            )
+          }
+          "www.youtube.com" -> {
+            respond(
+              content = "",
+              headers = headersOf(HttpHeaders.ContentType, ContentType.Text.Html.toString()),
+            )
+          }
+          else -> error("unexpected url = ${it.url.host}")
+        }
+      }
     }
-    val server = HttpClient(mockEngine)
-    server.use {
-      val result = unfurler.unfurl("/youtu.be/o-YBDTqX_ZU".toUrl())
-      assertThat(result).isNotNull()
-    }
+    val unfurler = Unfurler(httpClient = HttpClient(mockEngine))
+    val result = unfurler.unfurl("https://youtu.be/o-YBDTqX_ZU".toUrl())
+    assertThat(result).isNotNull()
   }
 }
 
 @Suppress("EnumEntryName")
-enum class HtmlTestInput(
+private enum class HtmlTestInput(
   val url: String,
   val htmlFileName: String,
   val expected: () -> UnfurlResult?,
@@ -92,7 +103,7 @@ enum class HtmlTestInput(
     }
   ),
   Instagram_com(  // Does not use most twitter meta tags.
-    url = "https://about.instagram.com",
+    url = "https://about.instagram.com/",
     htmlFileName = "html_source_instagram.com.html",
     expected = {
       UnfurlResult(
@@ -117,11 +128,4 @@ enum class HtmlTestInput(
       )
     }
   )
-}
-
-fun readResourceFile(fileName: String): String {
-  // TODO: Read from resources to run tests
-  return ""
-//  val url = Thread.currentThread().contextClassLoader.getResource(fileName)!!
-//  return File(url.path).readText()
 }
