@@ -5,8 +5,8 @@ import io.ktor.http.Url
 import me.saket.unfurl.extension.HtmlTagsBasedUnfurler
 import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
-import me.saket.unfurl.internal.toUrlOrNull
 import me.saket.unfurl.internal.NullableLruCache
+import me.saket.unfurl.internal.toUrlOrNull
 
 public class Unfurler(
   cacheSize: Int = 100,
@@ -22,13 +22,13 @@ public class Unfurler(
     override val logger: UnfurlLogger get() = this@Unfurler.logger
   }
 
-  public fun unfurl(url: String): UnfurlResult? {
+  public suspend fun unfurl(url: String): UnfurlResult? {
     return cache.computeIfAbsent(url) {
       try {
         url.toUrlOrNull()?.let { httpUrl ->
-          extensions.asSequence()
-            .mapNotNull { it.run { extensionScope.unfurl(httpUrl) } }
-            .firstOrNull()
+          extensions.firstNotNullOfOrNull {
+            it.run { extensionScope.unfurl(httpUrl) }
+          }
         }
       } catch (e: Throwable) {
         logger.log(e, "Failed to unfurl '$url'")
@@ -37,7 +37,7 @@ public class Unfurler(
     }
   }
 
-  public fun unfurl(url: Url): UnfurlResult? {
+  public suspend fun unfurl(url: Url): UnfurlResult? {
     return unfurl(url.toString())
   }
 

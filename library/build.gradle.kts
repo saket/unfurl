@@ -27,6 +27,7 @@ kotlin {
   sourceSets {
     sourceSets {
       commonMain.dependencies {
+        api(libs.kotlinx.coroutines.core)
         implementation(libs.ktor.client.core)
         implementation(libs.ksoup)
         implementation(libs.cache4k)
@@ -36,6 +37,7 @@ kotlin {
         implementation(libs.kotlin.test)
         implementation(libs.assertk)
         implementation(libs.testResources)
+        implementation(libs.kotlinx.coroutines.test)
       }
       jvmMain.dependencies {
         implementation(libs.ktor.client.okhttp)

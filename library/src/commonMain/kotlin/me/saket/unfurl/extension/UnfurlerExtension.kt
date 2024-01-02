@@ -6,7 +6,7 @@ import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
 
 public interface UnfurlerExtension {
-  public fun UnfurlerScope.unfurl(url: Url): UnfurlResult?
+  public suspend fun UnfurlerScope.unfurl(url: Url): UnfurlResult?
 }
 
 public interface UnfurlerScope {

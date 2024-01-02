@@ -13,11 +13,12 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kotlinx.coroutines.test.runTest
 import me.saket.unfurl.internal.toUrl
 import kotlin.test.Test
 
 class UnfurlerTest {
-  @Test fun `parse HTML correctly`() {
+  @Test fun `parse HTML correctly`() = runTest {
     HtmlTestInput.entries.forEach { input ->
       val mockEngine = MockEngine {
         respond(
@@ -32,7 +33,7 @@ class UnfurlerTest {
     }
   }
 
-  @Test fun `websites that deny requests without a recognizable user-agent`() {
+  @Test fun `websites that deny requests without a recognizable user-agent`() = runTest {
     val result = Unfurler().unfurl("https://www.getproactiv.ca/pdp?productcode=842944100695")
     assertThat(result).isEqualTo(
       UnfurlResult(
@@ -45,7 +46,7 @@ class UnfurlerTest {
     )
   }
 
-  @Test fun `websites that deny requests without content type and language headers`() {
+  @Test fun `websites that deny requests without content type and language headers`() = runTest {
     val result = Unfurler().unfurl("https://nitter.net/saketme/status/1716330453311877183")
     assertThat(result).isEqualTo(
       UnfurlResult(
@@ -58,7 +59,7 @@ class UnfurlerTest {
     )
   }
 
-  @Test fun `follow redirects`() {
+  @Test fun `follow redirects`() = runTest {
     val mockEngine = MockEngine.config {
       addHandler {
         when (it.url.host) {
