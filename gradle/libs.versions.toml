@@ -13,6 +13,8 @@ testResources = "0.4.0"
 kotlinx-coroutines = "1.7.3"  # https://github.com/kotlin/kotlinx.coroutines/releases
 okhttp = "4.12.0" # https://square.github.io/okhttp/changelogs/changelog. Updating to 5.x? See cli/build.gradle.kts.
 testParameterInjector = "1.8"
+clikt = "3.5.2"
+mordant = "2.0.0-beta13"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

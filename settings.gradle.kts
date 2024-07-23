@@ -17,6 +17,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "unfurl"
-//include(":cli")
+include(":cli")
 include(":library")
 //include(":unfurl-social")

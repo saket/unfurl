@@ -6,10 +6,9 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.animation.textAnimation
 import com.github.ajalt.mordant.markdown.Markdown
-import com.github.ajalt.mordant.rendering.TextColors.gray
 import com.github.ajalt.mordant.rendering.TextColors.green
-import com.github.ajalt.mordant.rendering.TextColors.yellow
 import com.github.ajalt.mordant.table.table
+import com.github.ajalt.mordant.terminal.ExperimentalTerminalApi
 import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.coroutineScope
@@ -19,24 +18,17 @@ import kotlinx.coroutines.runBlocking
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.Unfurler
-import me.saket.unfurl.social.TweetContentPreview
-import me.saket.unfurl.social.TweetContentPreview.AttachedImage
-import me.saket.unfurl.social.TweetContentPreview.AttachedVideo
-import me.saket.unfurl.social.TweetUnfurler
-import me.saket.unfurl.social.highestQuality
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 fun main(args: Array<String>) {
   UnfurlCommand().main(args)
 }
 
+@OptIn(ExperimentalTerminalApi::class)
 class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val url: String by argument("url")
-  private val twitterToken: String? by option("-t", "--twitter-token", envvar = "unfurler_twitter_token")
   private val debug: Boolean by option("-d", "--debug").flag(default = false)
 
   private val terminal = Terminal()
@@ -51,7 +43,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
 
     val okHttp = Unfurler.defaultOkHttpClient()
     val unfurler = Unfurler(
-      extensions = listOfNotNull(twitterToken?.let(::TweetUnfurler)),
+      extensions = emptyList(),
       logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp,
       httpClient = okHttp
     )
@@ -63,7 +55,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     } else {
       echo()
       when (val content = unfurled.contentPreview) {
-        is TweetContentPreview -> printTweet(content)
+//        is TweetContentPreview -> printTweet(content)
         else -> printGenericLink(unfurled)
       }
       echo()
@@ -72,7 +64,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     okHttp.forceShutDown()
   }
 
-  private suspend fun <T> withProgressAnimation(block: () -> T): T {
+  private suspend fun <T> withProgressAnimation(block: suspend () -> T): T {
     val frames = "⣾⣽⣻⢿⡿⣟⣯⣷"
     val animation = terminal.textAnimation<Int> { frame ->
       green(frames[frame % frames.length].toString())
@@ -97,36 +89,36 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     }
   }
 
-  private fun printTweet(tweet: TweetContentPreview) {
-    terminal.println(
-      table {
-        body {
-          row("Author", "${tweet.authorProfileName} (@${tweet.authorUsername})")
-          row("Photo", tweet.authorProfilePhoto?.ellipsizeAndHyperlink())
-          row("Tweet", tweet.body.breakLines())
-          row("Timestamp", tweet.createdAt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)))
-
-          if (tweet.attachments.isNotEmpty()) {
-            val urls = tweet.attachments.map { attachment ->
-              when (attachment) {
-                is AttachedImage -> attachment.url
-                is AttachedVideo -> attachment.variants.highestQuality().url
-                else -> error("unsupported attachment: $attachment")
-              }
-            }
-            row {
-              cell("Attachments") { rowSpan = urls.size }
-              cell(urls.first().ellipsizeAndHyperlink())
-            }
-            urls.drop(1).forEach {
-              row(it.ellipsizeAndHyperlink())
-            }
-          }
-        }
-      }
-    )
-    echo(gray("(Your terminal may or may not support hyperlinks)"))
-  }
+//  private fun printTweet(tweet: TweetContentPreview) {
+//    terminal.println(
+//      table {
+//        body {
+//          row("Author", "${tweet.authorProfileName} (@${tweet.authorUsername})")
+//          row("Photo", tweet.authorProfilePhoto?.ellipsizeAndHyperlink())
+//          row("Tweet", tweet.body.breakLines())
+//          row("Timestamp", tweet.createdAt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)))
+//
+//          if (tweet.attachments.isNotEmpty()) {
+//            val urls = tweet.attachments.map { attachment ->
+//              when (attachment) {
+//                is AttachedImage -> attachment.url
+//                is AttachedVideo -> attachment.variants.highestQuality().url
+//                else -> error("unsupported attachment: $attachment")
+//              }
+//            }
+//            row {
+//              cell("Attachments") { rowSpan = urls.size }
+//              cell(urls.first().ellipsizeAndHyperlink())
+//            }
+//            urls.drop(1).forEach {
+//              row(it.ellipsizeAndHyperlink())
+//            }
+//          }
+//        }
+//      }
+//    )
+//    echo(gray("(Your terminal may or may not support hyperlinks)"))
+//  }
 
   private fun printGenericLink(unfurled: UnfurlResult) {
     terminal.println(
@@ -142,11 +134,6 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
         }
       }
     )
-
-    if (TweetUnfurler.isTweetUrl(unfurled.url)) {
-      echo(yellow("\nTweets can't be fully unfurled without a Twitter API token.\nYou can provide " +
-        "one using --twitter-token option or an 'unfurler_twitter_token' env variable."))
-    }
   }
 
   private fun String.breakLines(): String {
@@ -156,7 +143,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   }
 
   // FYI not all terminals support hyperlinks. At the time
-  // of writing this, iTerm does but macOS terminal does not.
+  // of writing this, iTerm does, but macOS terminal does not.
   private fun HttpUrl.ellipsizeAndHyperlink(): Markdown {
     val ellipsized = toString().let {
       if (it.length > maxWidthOfTableColumn) "${it.take(maxWidthOfTableColumn - 1)}…" else it
