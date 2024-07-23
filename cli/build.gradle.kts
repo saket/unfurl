@@ -8,8 +8,8 @@ application {
 }
 
 dependencies {
-  implementation(project(":library"))
-  //implementation(project(":unfurl-social"))
+  implementation(projects.unfurl)
+  implementation(projects.unfurlSocial)
 
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.clikt)

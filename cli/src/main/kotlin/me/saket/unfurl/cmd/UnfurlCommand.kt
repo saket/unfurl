@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.Unfurler
+import me.saket.unfurl.social.MastodonUnfurler
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -43,7 +44,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
 
     val okHttp = Unfurler.defaultOkHttpClient()
     val unfurler = Unfurler(
-      extensions = emptyList(),
+      extensions = listOf(MastodonUnfurler()),
       logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp,
       httpClient = okHttp
     )

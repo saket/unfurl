@@ -10,14 +10,14 @@ import okhttp3.MediaType.Companion.toMediaType
 import org.junit.Test
 import java.time.ZonedDateTime
 
-class TweetUnfurlerTest {
-  private fun unfurler(twitter: TweetUnfurler? = tweetUnfurler()): Unfurler {
+class MastodonUnfurlerTest {
+  private fun unfurler(twitter: MastodonUnfurler? = tweetUnfurler()): Unfurler {
     return Unfurler(extensions = listOfNotNull(twitter))
   }
 
-  private fun tweetUnfurler(): TweetUnfurler {
+  private fun tweetUnfurler(): MastodonUnfurler {
     val token = System.getenv("unfurler_twitter_token") ?: error("missing api token")
-    return TweetUnfurler(bearerToken = token)
+    return MastodonUnfurler(bearerToken = token)
   }
 
   @Test fun `ignore non-twitter links`() {
