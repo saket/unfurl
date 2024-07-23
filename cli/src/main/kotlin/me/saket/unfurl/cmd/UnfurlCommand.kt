@@ -36,7 +36,13 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val maxWidthOfTableColumn = 52
 
   override fun run() = runBlocking {
-    val url = url.toHttpUrlOrNull()
+    val url = url.let {
+      if (!it.startsWith("http") && !it.startsWith("https")) {
+        "https://$it"
+      } else {
+        it
+      }.toHttpUrlOrNull()
+    }
     if (url == null) {
       echo("Invalid link", err = true)
       return@runBlocking
