@@ -1,17 +1,15 @@
 package me.saket.unfurl.extension
 
-import com.fleeksoft.ksoup.nodes.Document
-import com.fleeksoft.ksoup.nodes.Element
-import io.ktor.http.URLBuilder
-import io.ktor.http.Url
-import io.ktor.http.appendEncodedPathSegments
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
-import me.saket.unfurl.internal.toUrlOrNull
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import org.jsoup.nodes.Document as JsoupDocument
+import org.jsoup.nodes.Element as JsoupElement
 
 internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
 
-  fun parse(url: Url, document: Document): UnfurlResult {
+  fun parse(url: HttpUrl, document: JsoupDocument): UnfurlResult {
     return UnfurlResult(
       url = url,
       title = parseTitle(document),
@@ -21,7 +19,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     )
   }
 
-  private fun parseTitle(document: Document): String? {
+  private fun parseTitle(document: JsoupDocument): String? {
     val linkTitle = metaTag(document, "twitter:title")
       ?: metaTag(document, "og:title")
       ?: document.title().nullIfBlank()
@@ -32,7 +30,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return linkTitle
   }
 
-  private fun parseDescription(document: Document): String? {
+  private fun parseDescription(document: JsoupDocument): String? {
     val linkTitle = metaTag(document, "twitter:description")
       ?: metaTag(document, "og:description")
       ?: metaTag(document, "description")
@@ -43,7 +41,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return linkTitle
   }
 
-  private fun parseThumbnailUrl(document: Document): Url? {
+  private fun parseThumbnailUrl(document: JsoupDocument): HttpUrl? {
     // Twitter's image tag is preferred over facebook's
     // because websites seem to give better images for twitter.
     val thumbnailUrl = metaTag(document, "twitter:image", isUrl = true)
@@ -53,36 +51,38 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
 
     // So... scheme-less URLs are a thing.
     val needsScheme = thumbnailUrl != null && thumbnailUrl.startsWith("//")
-    return (if (needsScheme) "https:$thumbnailUrl" else thumbnailUrl)?.toUrlOrNull()
+    return (if (needsScheme) "https:$thumbnailUrl" else thumbnailUrl)?.toHttpUrlOrNull()
   }
 
-  private fun parseFaviconUrl(document: Document): Url? {
+  private fun parseFaviconUrl(document: JsoupDocument): HttpUrl? {
     val faviconUrl = linkRelTag(document, "apple-touch-icon")
       ?: linkRelTag(document, "apple-touch-icon-precomposed")
       ?: linkRelTag(document, "shortcut icon")
       ?: linkRelTag(document, "icon")
-    return faviconUrl?.toUrlOrNull()
+    return faviconUrl?.toHttpUrlOrNull()
   }
 
-  private fun fallbackFaviconUrl(url: Url): Url {
-    return URLBuilder(protocol = url.protocol, host = url.host)
-      .appendEncodedPathSegments("/favicon.ico")
+  private fun fallbackFaviconUrl(url: HttpUrl): HttpUrl {
+    return HttpUrl.Builder()
+      .scheme(url.scheme)
+      .host(url.host)
+      .encodedPath("/favicon.ico")
       .build()
   }
 
-  private fun metaTag(document: Document, attr: String, isUrl: Boolean = false): String? {
+  private fun metaTag(document: JsoupDocument, attr: String, isUrl: Boolean = false): String? {
     val names = document.select("meta[name=$attr]")
     val properties = document.select("meta[property=$attr]")
 
     return sequenceOf(names, properties)
       .flatMap { it }
-      .mapNotNull { element: Element ->
+      .mapNotNull { element: JsoupElement ->
         element.attr(if (isUrl) "abs:content" else "content").nullIfBlank()
       }
       .firstOrNull()
   }
 
-  private fun linkRelTag(document: Document, rel: String): String? {
+  private fun linkRelTag(document: JsoupDocument, rel: String): String? {
     val elements = document.head().select("link[rel=$rel]")
     var largestSizeUrl = elements.firstOrNull()?.attr("abs:href") ?: return null
     var largestSize = 0

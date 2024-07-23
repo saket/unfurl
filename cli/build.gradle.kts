@@ -8,7 +8,7 @@ application {
 }
 
 dependencies {
-  implementation(project(":unfurl"))
+  implementation(project(":library"))
   implementation(project(":unfurl-social"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
   implementation("com.github.ajalt.clikt:clikt:3.5.2")

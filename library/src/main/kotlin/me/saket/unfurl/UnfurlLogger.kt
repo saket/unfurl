@@ -1,10 +1,10 @@
 package me.saket.unfurl
 
-public interface UnfurlLogger {
-  public fun log(message: String)
-  public fun log(e: Throwable, message: String)
+interface UnfurlLogger {
+  fun log(message: String)
+  fun log(e: Throwable, message: String)
 
-  public object Println : UnfurlLogger {
+  object Println : UnfurlLogger {
     override fun log(e: Throwable, message: String) {
       println(message)
       println(e.stackTraceToString())
@@ -15,7 +15,7 @@ public interface UnfurlLogger {
     }
   }
 
-  public object NoOp : UnfurlLogger {
+  object NoOp : UnfurlLogger {
     override fun log(message: String): Unit = Unit
     override fun log(e: Throwable, message: String): Unit = Unit
   }
