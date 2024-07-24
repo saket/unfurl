@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.Unfurler
-import me.saket.unfurl.social.MastodonUnfurler
+import me.saket.unfurl.cmd.extensions.MastodonUnfurlerExtension
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -50,7 +50,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
 
     val okHttp = Unfurler.defaultOkHttpClient()
     val unfurler = Unfurler(
-      extensions = listOf(MastodonUnfurler()),
+      extensions = listOf(MastodonUnfurlerExtension()),
       logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp,
       httpClient = okHttp
     )
@@ -105,7 +105,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
           row("Thumbnail", unfurled.thumbnail?.ellipsizeAndHyperlink())
           row("Favicon", unfurled.favicon?.ellipsizeAndHyperlink())
 
-          unfurled.extra(MastodonUnfurler.EngagementStatsExtra::class)?.let { mastodonStats ->
+          unfurled.extra(MastodonUnfurlerExtension.EngagementStatsExtra::class)?.let { mastodonStats ->
             row("Engagement stats", buildString {
               append(if (mastodonStats.favorites == 1) "1 favorite" else "${mastodonStats.favorites} favorites, ")
               append(if (mastodonStats.replies == 1) "1 reply" else "${mastodonStats.replies} replies, ")

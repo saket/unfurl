@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalStdlibApi::class)
 
-package me.saket.unfurl.social
+package me.saket.unfurl.cmd.extensions
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
@@ -12,7 +12,7 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request as HttpRequest
 
-class MastodonUnfurler : UnfurlerExtension {
+class MastodonUnfurlerExtension : UnfurlerExtension {
   private val moshi = Moshi.Builder().build()
 
   override suspend fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
@@ -52,7 +52,7 @@ class MastodonUnfurler : UnfurlerExtension {
         }
       }
     } catch (e: Throwable) {
-      logger.log(e, "Failed to parse tweet: $url")
+      logger.log(e, "Failed to parse status: $url")
     }
     return null
   }

@@ -6,13 +6,16 @@ import assertk.assertions.isGreaterThanOrEqualTo
 import assertk.assertions.isNull
 import kotlinx.coroutines.test.runTest
 import me.saket.unfurl.Unfurler
+import me.saket.unfurl.cmd.extensions.MastodonRegexes
+import me.saket.unfurl.cmd.extensions.MastodonStatusId
+import me.saket.unfurl.cmd.extensions.MastodonUnfurlerExtension
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Test
 
-class MastodonUnfurlerTest {
+class MastodonUnfurlerExtensionTest {
   @Test fun `status with text`() = runTest {
     val unfurler = Unfurler(
-      extensions = listOf(MastodonUnfurler())
+      extensions = listOf(MastodonUnfurlerExtension())
     )
 
     val unfurled = unfurler.unfurl("https://androiddev.social/@saket/112731877340552402")!!
@@ -20,7 +23,7 @@ class MastodonUnfurlerTest {
       assertThat(url).isEqualTo("https://androiddev.social/@saket/112731877340552402".toHttpUrl())
       assertThat(title).isEqualTo("@saket")
       assertThat(description).isEqualTo("<p>Finding it very hard to keep up with my OSS projects when summer is summering this hard</p>")
-      with(extra(MastodonUnfurler.EngagementStatsExtra::class)!!) {
+      with(extra(MastodonUnfurlerExtension.EngagementStatsExtra::class)!!) {
         assertThat(favorites).isGreaterThanOrEqualTo(13)
         assertThat(replies).isGreaterThanOrEqualTo(3)
         assertThat(boosts).isEqualTo(0)

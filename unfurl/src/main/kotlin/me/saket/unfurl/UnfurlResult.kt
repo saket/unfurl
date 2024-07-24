@@ -23,7 +23,7 @@ import kotlin.reflect.cast
   val extras: Map<KClass<*>, Any> = mapOf()
 ) {
 
-  /** Returns extra metadata of type [type], or null if no such metadata is held. */
+  /** Returns extra information of type [type], or null if no such extra is held. */
   fun <T : Any> extra(type: KClass<out T>): T? {
     val value = extras[type] ?: return null
     return type.cast(value)

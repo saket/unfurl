@@ -1,4 +1,4 @@
-package me.saket.unfurl.social
+package me.saket.unfurl.cmd.extensions
 
 import com.squareup.moshi.JsonClass
 
