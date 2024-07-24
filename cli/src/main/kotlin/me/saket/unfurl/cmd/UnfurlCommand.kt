@@ -61,10 +61,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       echo("Couldn't unfurl", err = true)
     } else {
       echo()
-      when (val content = unfurled.contentPreview) {
-//        is TweetContentPreview -> printTweet(content)
-        else -> printGenericLink(unfurled)
-      }
+      printUnfurledLink(unfurled)
       echo()
     }
 
@@ -96,38 +93,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     }
   }
 
-//  private fun printTweet(tweet: TweetContentPreview) {
-//    terminal.println(
-//      table {
-//        body {
-//          row("Author", "${tweet.authorProfileName} (@${tweet.authorUsername})")
-//          row("Photo", tweet.authorProfilePhoto?.ellipsizeAndHyperlink())
-//          row("Tweet", tweet.body.breakLines())
-//          row("Timestamp", tweet.createdAt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)))
-//
-//          if (tweet.attachments.isNotEmpty()) {
-//            val urls = tweet.attachments.map { attachment ->
-//              when (attachment) {
-//                is AttachedImage -> attachment.url
-//                is AttachedVideo -> attachment.variants.highestQuality().url
-//                else -> error("unsupported attachment: $attachment")
-//              }
-//            }
-//            row {
-//              cell("Attachments") { rowSpan = urls.size }
-//              cell(urls.first().ellipsizeAndHyperlink())
-//            }
-//            urls.drop(1).forEach {
-//              row(it.ellipsizeAndHyperlink())
-//            }
-//          }
-//        }
-//      }
-//    )
-//    echo(gray("(Your terminal may or may not support hyperlinks)"))
-//  }
-
-  private fun printGenericLink(unfurled: UnfurlResult) {
+  private fun printUnfurledLink(unfurled: UnfurlResult) {
     terminal.println(
       table {
         body {
@@ -138,6 +104,14 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
           row("Description", unfurled.description?.breakLines())
           row("Thumbnail", unfurled.thumbnail?.ellipsizeAndHyperlink())
           row("Favicon", unfurled.favicon?.ellipsizeAndHyperlink())
+
+          unfurled.extra(MastodonUnfurler.EngagementStatsExtra::class)?.let { mastodonStats ->
+            row("Engagement stats", buildString {
+              append(if (mastodonStats.favorites == 1) "1 favorite" else "${mastodonStats.favorites} favorites, ")
+              append(if (mastodonStats.replies == 1) "1 reply" else "${mastodonStats.replies} replies, ")
+              append(if (mastodonStats.boosts == 1) "1 boost" else "${mastodonStats.boosts} boosts")
+            })
+          }
         }
       }
     )

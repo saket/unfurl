@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.dokka)
   alias(libs.plugins.mavenPublish)
   alias(libs.plugins.testResources)
+  alias(libs.plugins.poko)
 }
 
 group = "me.saket.unfurl"

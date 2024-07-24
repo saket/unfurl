@@ -63,5 +63,4 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
   private fun MediaType?.isHtmlText(): Boolean {
     return this != null && type == "text" && subtype == "html"
   }
-
 }

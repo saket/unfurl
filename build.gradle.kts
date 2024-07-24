@@ -4,4 +4,5 @@ plugins {
   alias(libs.plugins.mavenPublish) apply false
   alias(libs.plugins.testResources) apply false
   alias(libs.plugins.ksp) apply false
+  alias(libs.plugins.poko) apply false
 }
