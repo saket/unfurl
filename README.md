@@ -15,7 +15,7 @@ UnfurlResult(
 )
 ```
 
-`unfurl` is extensible. See [TweetUnfurler](https://github.com/saket/unfurl/blob/trunk/unfurl-social/src/main/kotlin/me/saket/unfurl/social/TweetUnfurler.kt) as an example for unfurling tweets that can't be HTML scraped.
+`unfurl` is extensible. See [TweetUnfurler](https://github.com/saket/unfurl/blob/fcda60fee36010ad1208adef6ce89acc2c8d9387/unfurl-social/src/main/kotlin/me/saket/unfurl/social/TweetUnfurler.kt#L32) as an example for unfurling tweets that can't be HTML scraped.
 
 ```kotlin
 val unfurler = Unfurler(
