@@ -19,6 +19,7 @@ mordant = "2.0.0-beta13"
 junit = "4.13.2"
 moshi = "1.15.0"
 poko = "0.15.3" # https://github.com/drewhamilton/Poko/releases
+metalava = "0.4.0-alpha01"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -27,6 +28,7 @@ mavenPublish = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenP
 testResources = { id = "com.goncalossilva.resources", version.ref = "testResources" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 poko = { id = "dev.drewhamilton.poko", version.ref = "poko" }
+metalava = { id = "me.tylerbwong.gradle.metalava", version.ref = "metalava" }
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }

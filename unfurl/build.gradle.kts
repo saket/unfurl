@@ -5,6 +5,7 @@ plugins {
   alias(libs.plugins.mavenPublish)
   alias(libs.plugins.testResources)
   alias(libs.plugins.poko)
+  alias(libs.plugins.metalava)
 }
 
 group = "me.saket.unfurl"
@@ -13,6 +14,10 @@ kotlin {
   jvmToolchain {
     languageVersion.set(JavaLanguageVersion.of(17))
   }
+}
+metalava {
+  filename.set("api/api.txt")
+  enforceCheck.set(true)
 }
 
 dependencies {

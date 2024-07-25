@@ -5,4 +5,5 @@ plugins {
   alias(libs.plugins.testResources) apply false
   alias(libs.plugins.ksp) apply false
   alias(libs.plugins.poko) apply false
+  alias(libs.plugins.metalava) apply false
 }

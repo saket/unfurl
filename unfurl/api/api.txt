@@ -1,0 +1,69 @@
+// Signature format: 4.0
+package me.saket.unfurl {
+
+  public interface UnfurlLogger {
+    method public void log(String message);
+    method public void log(Throwable e, String message);
+    field public static final me.saket.unfurl.UnfurlLogger.Companion Companion;
+  }
+
+  public static final class UnfurlLogger.Companion {
+    method public me.saket.unfurl.UnfurlLogger noOp();
+    method public me.saket.unfurl.UnfurlLogger println();
+  }
+
+  @dev.drewhamilton.poko.Poko public final class UnfurlResult {
+    ctor public UnfurlResult(okhttp3.HttpUrl url, String? title, String? description, okhttp3.HttpUrl? favicon, okhttp3.HttpUrl? thumbnail, optional java.util.Map<kotlin.reflect.KClass<? extends java.lang.Object?>,?> extras);
+    method public <T> T? extra(kotlin.reflect.KClass<? extends T> type);
+    method public String? getDescription();
+    method public java.util.Map<kotlin.reflect.KClass<? extends java.lang.Object?>,java.lang.Object> getExtras();
+    method public okhttp3.HttpUrl? getFavicon();
+    method public okhttp3.HttpUrl? getThumbnail();
+    method public String? getTitle();
+    method public okhttp3.HttpUrl getUrl();
+    property public final String? description;
+    property public final java.util.Map<kotlin.reflect.KClass<? extends java.lang.Object?>,java.lang.Object> extras;
+    property public final okhttp3.HttpUrl? favicon;
+    property public final okhttp3.HttpUrl? thumbnail;
+    property public final String? title;
+    property public final okhttp3.HttpUrl url;
+  }
+
+  public interface Unfurler {
+    method public suspend Object? unfurl(String url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
+    method public default suspend Object? unfurl(okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
+    field public static final me.saket.unfurl.Unfurler.Companion Companion;
+  }
+
+  public static final class Unfurler.Companion {
+    method public okhttp3.OkHttpClient defaultOkHttpClient();
+  }
+
+  public final class UnfurlerKt {
+    method public static me.saket.unfurl.Unfurler Unfurler(optional int cacheSize, optional java.util.List<? extends me.saket.unfurl.extension.UnfurlerExtension> extensions, optional okhttp3.OkHttpClient httpClient, optional me.saket.unfurl.UnfurlLogger logger);
+  }
+
+}
+
+package me.saket.unfurl.extension {
+
+  public class HtmlTagsBasedUnfurler implements me.saket.unfurl.extension.UnfurlerExtension {
+    ctor public HtmlTagsBasedUnfurler();
+    method protected final org.jsoup.nodes.Document? downloadHtml(me.saket.unfurl.extension.UnfurlerScope, okhttp3.HttpUrl url);
+    method protected me.saket.unfurl.UnfurlResult? extractMetadata(me.saket.unfurl.extension.UnfurlerScope, org.jsoup.nodes.Document document);
+    method public suspend Object? unfurl(me.saket.unfurl.extension.UnfurlerScope, okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
+  }
+
+  public interface UnfurlerExtension {
+    method public suspend Object? unfurl(me.saket.unfurl.extension.UnfurlerScope, okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
+  }
+
+  public interface UnfurlerScope {
+    method public okhttp3.OkHttpClient getHttpClient();
+    method public me.saket.unfurl.UnfurlLogger getLogger();
+    property public abstract okhttp3.OkHttpClient httpClient;
+    property public abstract me.saket.unfurl.UnfurlLogger logger;
+  }
+
+}
+
