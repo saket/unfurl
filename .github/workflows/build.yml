@@ -1,4 +1,4 @@
-name: Android CI
+name: CI
 
 on:
   push:
@@ -13,12 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: gradle/wrapper-validation-action@v1
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v3
 
-      - name: Run tests
-        env:
-          unfurler_twitter_token: ${{ secrets.unfurler_twitter_token }}
+      - name: Run unit tests and friends
         run: ./gradlew check
