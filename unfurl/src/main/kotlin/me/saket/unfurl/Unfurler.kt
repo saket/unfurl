@@ -27,7 +27,7 @@ fun Unfurler(
   cacheSize: Int = 100,
   extensions: List<UnfurlerExtension> = emptyList(),
   httpClient: OkHttpClient = defaultOkHttpClient(),
-  logger: UnfurlLogger = UnfurlLogger.Println,
+  logger: UnfurlLogger = UnfurlLogger.println(),
 ): Unfurler {
   return RealUnfurler(
     cacheSize = cacheSize,

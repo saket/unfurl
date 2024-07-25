@@ -51,7 +51,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     val okHttp = Unfurler.defaultOkHttpClient()
     val unfurler = Unfurler(
       extensions = listOf(MastodonUnfurlerExtension()),
-      logger = if (debug) UnfurlLogger.Println else UnfurlLogger.NoOp,
+      logger = if (debug) UnfurlLogger.println() else UnfurlLogger.noOp(),
       httpClient = okHttp
     )
     val unfurled = withProgressAnimation {
