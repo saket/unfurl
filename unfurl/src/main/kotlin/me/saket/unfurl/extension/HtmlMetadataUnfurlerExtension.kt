@@ -10,7 +10,7 @@ import okhttp3.Request
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document as JsoupDocument
 
-open class HtmlTagsBasedUnfurler(
+open class HtmlMetadataUnfurlerExtension(
   private val httpUserAgent: String = SlackBotUserAgent,
   private val htmlByteLimit: Long = 32_768,
 ) : UnfurlerExtension {

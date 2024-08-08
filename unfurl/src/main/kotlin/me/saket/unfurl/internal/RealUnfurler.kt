@@ -3,7 +3,7 @@ package me.saket.unfurl.internal
 import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.Unfurler
-import me.saket.unfurl.extension.HtmlTagsBasedUnfurler
+import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -15,7 +15,7 @@ internal class RealUnfurler(
   private val httpClient: OkHttpClient,
   private val logger: UnfurlLogger,
 ) : Unfurler {
-  private val extensions = extensions + HtmlTagsBasedUnfurler()
+  private val extensions = extensions + HtmlMetadataUnfurlerExtension()
   private val cache = NullableLruCache<String, UnfurlResult?>(cacheSize)
 
   private val extensionScope = object : UnfurlerScope {

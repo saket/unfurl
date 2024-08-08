@@ -5,7 +5,7 @@ package me.saket.unfurl.cmd.extensions
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
 import me.saket.unfurl.UnfurlResult
-import me.saket.unfurl.extension.HtmlTagsBasedUnfurler
+import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
 import okhttp3.HttpUrl
@@ -33,7 +33,7 @@ class MastodonUnfurlerExtension : UnfurlerExtension {
             .fromJson(body.source())!!
             .thisOrReblogged()
 
-          val htmlMetadata = with(HtmlTagsBasedUnfurler()) {
+          val htmlMetadata = with(HtmlMetadataUnfurlerExtension()) {
             unfurl(url)
           }
 
