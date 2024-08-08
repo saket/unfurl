@@ -10,7 +10,11 @@ import okhttp3.Request
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document as JsoupDocument
 
-open class HtmlTagsBasedUnfurler : UnfurlerExtension {
+open class HtmlTagsBasedUnfurler(
+  private val httpUserAgent: String = SlackBotUserAgent,
+  private val htmlByteLimit: Long = 32_768,
+) : UnfurlerExtension {
+
   override suspend fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
     return withContext(Dispatchers.IO) {
       downloadHtml(url)?.let { doc ->
@@ -25,14 +29,15 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
       .url(url)
       // Some websites will deny empty/unknown user agents,
       // probably in an attempt to prevent scrapers?
-      .header(
-        "User-Agent",
-        "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Mobile Safari/537.36"
-      )
+      .header("User-Agent", httpUserAgent)
       // Websites like nitter will deny requests if
       // content type and language headers are missing.
       .header("Accept", "text/html")
       .header("Accept-Language", "en-US,en;q=0.5")
+      // Fetch as little of the page as possible, hoping
+      // that the HTML tags are present in the initial range.
+      // This was copied from Slack.
+      .header("Range", "bytes=0-$htmlByteLimit")
       .build()
 
     return try {
@@ -63,5 +68,14 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
 
   private fun MediaType?.isHtmlText(): Boolean {
     return this != null && type == "text" && subtype == "html"
+  }
+
+  companion object {
+    // Unfurl uses Slack's user agent by default because websites may
+    // have special handling for slack. Source: https://api.slack.com/robots.
+    const val SlackBotUserAgent = "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)"
+
+    const val ChromeMobileUserAgent =
+      "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36"
   }
 }
