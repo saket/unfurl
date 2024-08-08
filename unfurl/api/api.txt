@@ -31,16 +31,16 @@ package me.saket.unfurl {
 
   public interface Unfurler {
     method public suspend Object? unfurl(String url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
-    method public default suspend Object? unfurl(okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
     field public static final me.saket.unfurl.Unfurler.Companion Companion;
   }
 
   public static final class Unfurler.Companion {
-    method public okhttp3.OkHttpClient defaultOkHttpClient();
   }
 
   public final class UnfurlerKt {
     method public static me.saket.unfurl.Unfurler Unfurler(optional int cacheSize, optional java.util.List<? extends me.saket.unfurl.extension.UnfurlerExtension> extensions, optional okhttp3.OkHttpClient httpClient, optional me.saket.unfurl.UnfurlLogger logger);
+    method public static okhttp3.OkHttpClient defaultOkHttpClient(me.saket.unfurl.Unfurler.Companion);
+    method public static suspend Object? unfurl(me.saket.unfurl.Unfurler, okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
   }
 
 }

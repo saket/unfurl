@@ -20,6 +20,8 @@ import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.Unfurler
 import me.saket.unfurl.cmd.extensions.MastodonUnfurlerExtension
 import me.saket.unfurl.cmd.extensions.mastodonEngagementStats
+import me.saket.unfurl.defaultOkHttpClient
+import me.saket.unfurl.unfurl
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -53,7 +55,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     val unfurler = Unfurler(
       extensions = listOf(MastodonUnfurlerExtension()),
       logger = if (debug) UnfurlLogger.println() else UnfurlLogger.noOp(),
-      httpClient = okHttp
+      httpClient = okHttp,
     )
     val unfurled = withProgressAnimation {
       unfurler.unfurl(url)
