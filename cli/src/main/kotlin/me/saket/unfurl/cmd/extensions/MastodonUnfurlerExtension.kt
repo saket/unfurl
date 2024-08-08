@@ -33,14 +33,16 @@ class MastodonUnfurlerExtension : UnfurlerExtension {
             .fromJson(body.source())!!
             .thisOrReblogged()
 
-          val htmlTags = with(HtmlTagsBasedUnfurler()) { unfurl(url) }
+          val htmlMetadata = with(HtmlTagsBasedUnfurler()) {
+            unfurl(url)
+          }
 
           return UnfurlResult(
             url = status.url!!.toHttpUrl(),
             title = "@${status.account.acct}",
             description = status.content,
-            thumbnail = htmlTags?.thumbnail,
-            favicon = htmlTags?.favicon,
+            thumbnail = htmlMetadata?.thumbnail,
+            favicon = htmlMetadata?.favicon,
             extras = mapOf(
               EngagementStatsExtra::class to EngagementStatsExtra(
                 favorites = status.favourites_count,
