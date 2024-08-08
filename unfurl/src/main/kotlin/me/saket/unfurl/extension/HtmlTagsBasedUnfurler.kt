@@ -39,11 +39,10 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
         val redirectedUrl = response.request.url
 
         if (body != null && body.contentType().isHtmlText()) {
-          // TODO: stream the HTML body only until a "</head>" is received instead of streaming the entire HTML body.
           Jsoup.parse(
             /* in */ body.source().inputStream(),
             /* charsetName */ null,
-            /* baseUri */ redirectedUrl.toString()
+            /* baseUri */ redirectedUrl.toString(),
           )
         } else {
           null
