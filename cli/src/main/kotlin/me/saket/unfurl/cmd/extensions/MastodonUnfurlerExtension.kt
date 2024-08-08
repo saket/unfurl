@@ -64,6 +64,10 @@ class MastodonUnfurlerExtension : UnfurlerExtension {
   )
 }
 
+fun UnfurlResult.mastodonEngagementStats(): MastodonUnfurlerExtension.EngagementStatsExtra? {
+  return extra(MastodonUnfurlerExtension.EngagementStatsExtra::class)
+}
+
 internal object MastodonRegexes {
   private val UsernameRegex = Regex("^@[\\w.-]+(@[\\w.-]+)?$")
   private val StatusIdRegex = Regex("^[0-9]+$")

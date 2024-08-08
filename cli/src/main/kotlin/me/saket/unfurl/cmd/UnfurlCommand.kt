@@ -19,6 +19,7 @@ import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
 import me.saket.unfurl.Unfurler
 import me.saket.unfurl.cmd.extensions.MastodonUnfurlerExtension
+import me.saket.unfurl.cmd.extensions.mastodonEngagementStats
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -105,7 +106,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
           row("Thumbnail", unfurled.thumbnail?.ellipsizeAndHyperlink())
           row("Favicon", unfurled.favicon?.ellipsizeAndHyperlink())
 
-          unfurled.extra(MastodonUnfurlerExtension.EngagementStatsExtra::class)?.let { mastodonStats ->
+          unfurled.mastodonEngagementStats()?.let { mastodonStats ->
             row("Engagement stats", buildString {
               append(if (mastodonStats.favorites == 1) "1 favorite" else "${mastodonStats.favorites} favorites, ")
               append(if (mastodonStats.replies == 1) "1 reply" else "${mastodonStats.replies} replies, ")
