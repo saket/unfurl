@@ -5,7 +5,6 @@ import me.saket.unfurl.UnfurlResult
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.jsoup.nodes.Document as JsoupDocument
-import org.jsoup.nodes.Element as JsoupElement
 
 internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
 
@@ -71,15 +70,12 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
   }
 
   private fun metaTag(document: JsoupDocument, attr: String, isUrl: Boolean = false): String? {
-    val names = document.select("meta[name=$attr]")
-    val properties = document.select("meta[property=$attr]")
-
-    return sequenceOf(names, properties)
-      .flatMap { it }
-      .mapNotNull { element: JsoupElement ->
-        element.attr(if (isUrl) "abs:content" else "content").nullIfBlank()
-      }
-      .firstOrNull()
+    return listOf(
+      document.select("meta[name=$attr]"),
+      document.select("meta[property=$attr]"),
+    ).firstNotNullOfOrNull {
+      it.attr(if (isUrl) "abs:content" else "content").nullIfBlank()
+    }
   }
 
   private fun linkRelTag(document: JsoupDocument, rel: String): String? {
