@@ -32,7 +32,6 @@ class UnfurlerTest {
     )
 
     val localUrl = server.url(input.url.removePrefix("https:/"))
-    println("localUrl = $localUrl")
     val result = unfurler.unfurl(localUrl)
     assertThat(result).isEqualTo(input.expected(localUrl))
 
