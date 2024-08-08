@@ -70,6 +70,7 @@ open class HtmlMetadataUnfurlerExtension(
     return this != null && type == "text" && subtype == "html"
   }
 
+  @Suppress("ConstPropertyName", "unused")
   companion object {
     // Unfurl uses Slack's user agent by default because websites may
     // have special handling for slack. Source: https://api.slack.com/robots.
