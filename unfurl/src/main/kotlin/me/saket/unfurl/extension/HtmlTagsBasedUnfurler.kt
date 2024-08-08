@@ -29,6 +29,8 @@ open class HtmlTagsBasedUnfurler : UnfurlerExtension {
         "User-Agent",
         "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Mobile Safari/537.36"
       )
+      // Websites like nitter will deny requests if
+      // content type and language headers are missing.
       .header("Accept", "text/html")
       .header("Accept-Language", "en-US,en;q=0.5")
       .build()

@@ -10,6 +10,7 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout
@@ -51,6 +52,7 @@ class UnfurlerTest {
     )
   }
 
+  @Ignore("Nitter intances get rate limited very frequently. Also see: https://github.com/zedeus/nitter/wiki/Instances")
   @Test fun `websites that deny requests without content type and language headers`() = runTest {
     val result = unfurler.unfurl("https://nitter.privacydev.net/saketme/status/1716330453311877183")
     assertThat(result).isEqualTo(
