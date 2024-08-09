@@ -47,11 +47,17 @@ package me.saket.unfurl {
 
 package me.saket.unfurl.extension {
 
-  public class HtmlTagsBasedUnfurler implements me.saket.unfurl.extension.UnfurlerExtension {
-    ctor public HtmlTagsBasedUnfurler();
+  public class HtmlMetadataUnfurlerExtension implements me.saket.unfurl.extension.UnfurlerExtension {
+    ctor public HtmlMetadataUnfurlerExtension(optional String httpUserAgent, optional long htmlByteLimit);
     method protected final org.jsoup.nodes.Document? downloadHtml(me.saket.unfurl.extension.UnfurlerScope, okhttp3.HttpUrl url);
     method protected me.saket.unfurl.UnfurlResult? extractMetadata(me.saket.unfurl.extension.UnfurlerScope, org.jsoup.nodes.Document document);
     method public suspend Object? unfurl(me.saket.unfurl.extension.UnfurlerScope, okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
+    field public static final String ChromeMobileUserAgent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36";
+    field public static final me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension.Companion Companion;
+    field public static final String SlackBotUserAgent = "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)";
+  }
+
+  public static final class HtmlMetadataUnfurlerExtension.Companion {
   }
 
   public interface UnfurlerExtension {
