@@ -1,6 +1,6 @@
 # unfurl
 
-A kotlin library that generates link previews by extracting their [Twitter Card](https://developer.x.com/en/docs/twitter-for-websites/cards/guides/getting-started) and [Open Graph](https://ogp.me/) tags.
+A kotlin library for generating link previews by extracting their [Twitter Card](https://developer.x.com/en/docs/twitter-for-websites/cards/guides/getting-started) and [Open Graph](https://ogp.me/) tags.
 
 ```groovy
 implementation "me.saket.unfurl:unfurl:2.0.0"
