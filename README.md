@@ -1,6 +1,10 @@
 # unfurl
 
-`unfurl` is a kotlin library that generates link previews by extracting their social metadata.
+A kotlin library that generates link previews by extracting their [Twitter Card](https://developer.x.com/en/docs/twitter-for-websites/cards/guides/getting-started) and [Open Graph](https://ogp.me/) tags.
+
+```groovy
+implementation "me.saket.unfurl:unfurl:2.0.0"
+```
 
 ```kotlin
 val unfurler = Unfurler()
@@ -15,16 +19,12 @@ UnfurlResult(
 )
 ```
 
-`unfurl` is extensible. See [TweetUnfurler](https://github.com/saket/unfurl/blob/fcda60fee36010ad1208adef6ce89acc2c8d9387/unfurl-social/src/main/kotlin/me/saket/unfurl/social/TweetUnfurler.kt#L32) as an example for unfurling tweets that can't be HTML scraped.
+`unfurl` is extensible. See [MastodonUnfurlerExtension](https://github.com/saket/unfurl/blob/901ae909341518c8a8214500b7802eaee7b0ebf5/cli/src/main/kotlin/me/saket/unfurl/cmd/extensions/MastodonUnfurlerExtension.kt#L15) as an example for unfurling statuses that can't be HTML scraped.
 
 ```kotlin
 val unfurler = Unfurler(
-  extensions = listOf(TweetUnfurler(), ...)
+  extensions = listOf(MastodonUnfurlerExtension(), ...)
 )
-```
-```groovy
-implementation "me.saket.unfurl:unfurl:1.7.0"
-implementation "me.saket.unfurl:unfurl-social:1.7.0" // For TweetUnfurler.
 ```
 
 ### cli
