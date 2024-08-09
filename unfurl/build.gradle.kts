@@ -34,3 +34,35 @@ dependencies {
   testImplementation(libs.testParameterInjector)
   testImplementation(libs.okhttp.mockWebServer)
 }
+
+mavenPublishing {
+  signAllPublications()
+  publishToMavenCentral(automaticRelease = true)
+
+  coordinates("me.saket.unfurl", "unfurl", "1.7.0")
+  pom {
+    name = "unfurl"
+    description = "Generate preview of links, inspired by Slack"
+    inceptionYear = "2022"
+    url = "https://github.com/saket/unfurl"
+    packaging = "jar"
+    licenses {
+      license {
+        name = "The Apache License, Version 2.0"
+        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        distribution = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      }
+    }
+    developers {
+      developer {
+        id = "saket"
+        name = "Saket Narayan"
+        url = "https://github.com/saket"
+      }
+    }
+    scm {
+      url = "https://github.com/saket/unfurl"
+      connection = "scm:git@github.com:saket/unfurl.git"
+    }
+  }
+}
