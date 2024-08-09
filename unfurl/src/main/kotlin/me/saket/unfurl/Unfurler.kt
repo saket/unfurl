@@ -15,7 +15,7 @@ fun Unfurler(
     cacheSize = cacheSize,
     extensions = extensions,
     httpClient = httpClient,
-    logger = logger
+    logger = logger,
   )
 }
 
