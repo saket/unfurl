@@ -24,7 +24,7 @@ metalava = "0.4.0-alpha01"
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-mavenPublish = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenPublish" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 testResources = { id = "com.goncalossilva.resources", version.ref = "testResources" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 poko = { id = "dev.drewhamilton.poko", version.ref = "poko" }
