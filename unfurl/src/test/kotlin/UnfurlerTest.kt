@@ -78,6 +78,20 @@ class UnfurlerTest {
     assertThat(server.takeRequest()).isNotNull()
   }
 
+  @Test fun `cache unfurled urls`() = runTest {
+    server.enqueue(
+      MockResponse()
+        .setHeader("Content-Type", "text/html; charset=UTF-8")
+        .setBody(readResourceFile("html_source_saket.me.html"))
+    )
+
+    repeat(3) {
+      val result = unfurler.unfurl(server.url("foo"))
+      assertThat(result?.title).isEqualTo("Great teams merge fast")
+    }
+    assertThat(server.requestCount).isEqualTo(1)
+  }
+
   private fun readResourceFile(fileName: String): String {
     val url = Thread.currentThread().contextClassLoader.getResource(fileName)!!
     return File(url.path).readText()

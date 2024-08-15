@@ -1,19 +1,18 @@
 package me.saket.unfurl.internal
 
-import com.sksamuel.aedile.core.cacheBuilder
+import io.github.reactivecircus.cache4k.Cache
 import me.saket.unfurl.internal.NullableLruCache.Optional.None
 import me.saket.unfurl.internal.NullableLruCache.Optional.Some
 import kotlin.time.Duration.Companion.hours
 
 internal class NullableLruCache<K : Any, V>(maxSize: Int) {
-  private val delegate = cacheBuilder<K, Optional<V>> {
-    useCallingContext = true
-    expireAfterAccess = 24.hours
-    maximumSize = maxSize.toLong()
-  }.build()
+  private val delegate = Cache.Builder<K, Optional<V>>()
+    .expireAfterAccess(24.hours)
+    .maximumCacheSize(maxSize.toLong())
+    .build()
 
-  suspend inline fun computeIfAbsent(key: K, create: () -> V?): V? {
-    return when (val cached = delegate.getIfPresent(key)) {
+  inline fun computeIfAbsent(key: K, create: () -> V?): V? {
+    return when (val cached = delegate.get(key)) {
       is Some -> cached.value
       is None -> null
       null -> create().also {

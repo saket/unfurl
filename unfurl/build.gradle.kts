@@ -24,7 +24,7 @@ dependencies {
   api(libs.okhttp.core)
 
   implementation(libs.jsoup)
-  implementation(libs.aedile)
+  implementation(libs.cache4k)
 
   testImplementation(libs.junit)
   testImplementation(libs.assertk)
