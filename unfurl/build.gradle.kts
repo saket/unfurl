@@ -34,7 +34,7 @@ mavenPublishing {
   signAllPublications()
   publishToMavenCentral(automaticRelease = true)
 
-  coordinates("me.saket.unfurl", "unfurl", "2.2.0-SNAPSHOT")
+  coordinates("me.saket.unfurl", "unfurl", "2.2.0")
   pom {
     name = "unfurl"
     description = "Generate preview of links, inspired by Slack"
