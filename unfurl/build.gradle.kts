@@ -9,11 +9,6 @@ plugins {
 
 group = "me.saket.unfurl"
 
-kotlin {
-  jvmToolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
-  }
-}
 metalava {
   filename.set("api/api.txt")
   enforceCheck.set(true)
