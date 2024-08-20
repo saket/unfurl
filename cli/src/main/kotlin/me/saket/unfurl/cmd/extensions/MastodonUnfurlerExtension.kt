@@ -10,6 +10,7 @@ import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import ru.gildor.coroutines.okhttp.await
 import okhttp3.Request as HttpRequest
 
 class MastodonUnfurlerExtension : UnfurlerExtension {
@@ -27,7 +28,7 @@ class MastodonUnfurlerExtension : UnfurlerExtension {
       .build()
 
     try {
-      httpClient.newCall(request).execute().use { response ->
+      httpClient.newCall(request).await().use { response ->
         response.body?.let { body ->
           val status = moshi.adapter<MastodonStatus>()
             .fromJson(body.source())!!

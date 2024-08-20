@@ -14,6 +14,7 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.clikt)
   implementation(libs.mordant)
+  implementation(libs.okhttp.coroutines)
   implementation(libs.moshi.core)
   ksp(libs.moshi.codegen)
 
