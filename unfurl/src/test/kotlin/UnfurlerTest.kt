@@ -88,8 +88,9 @@ class UnfurlerTest {
         .setBody(readResourceFile("html_source_saket.me.html"))
     )
 
+    val unfurler = Unfurler()
     repeat(3) {
-      val result = Unfurler().unfurl(server.url("foo"))
+      val result = unfurler.unfurl(server.url("foo"))
       assertThat(result?.title).isEqualTo("Great teams merge fast")
     }
     assertThat(server.requestCount).isEqualTo(1)
