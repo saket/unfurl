@@ -19,7 +19,7 @@ UnfurlResult(
 )
 ```
 
-`unfurl` is extensible. See [MastodonUnfurlerExtension](https://github.com/saket/unfurl/blob/901ae909341518c8a8214500b7802eaee7b0ebf5/cli/src/main/kotlin/me/saket/unfurl/cmd/extensions/MastodonUnfurlerExtension.kt#L15) as an example for unfurling statuses that can't be HTML scraped.
+`unfurl` is extensible. See [MastodonUnfurlerExtension](https://github.com/saket/unfurl/blob/0867097e4ac310605b8a789ae20518f9ad3a3f13/cli/src/main/kotlin/me/saket/unfurl/cmd/extensions/MastodonUnfurlerExtension.kt#L16) as an example for unfurling statuses that can't be HTML scraped.
 
 ```kotlin
 val unfurler = Unfurler(
