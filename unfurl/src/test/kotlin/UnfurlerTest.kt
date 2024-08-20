@@ -3,9 +3,13 @@ package me.saket.unfurl
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import assertk.assertions.isTrue
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.Call
+import okhttp3.EventListener
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.mockwebserver.MockResponse
@@ -17,6 +21,7 @@ import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 @RunWith(TestParameterInjector::class)
 class UnfurlerTest {
@@ -88,6 +93,31 @@ class UnfurlerTest {
       assertThat(result?.title).isEqualTo("Great teams merge fast")
     }
     assertThat(server.requestCount).isEqualTo(1)
+  }
+
+  @Test fun `cancel the network call when unfurling is cancelled`() = runTest {
+    server.enqueue(
+      MockResponse()
+        .setBodyDelay(Long.MAX_VALUE, TimeUnit.SECONDS)
+    )
+
+    val httpEventListener = object : EventListener() {
+      var requestCanceled = false
+      override fun canceled(call: Call) {
+        requestCanceled = true
+      }
+    }
+    val unfurler = Unfurler(
+      httpClient = Unfurler.defaultOkHttpClient()
+        .newBuilder()
+        .eventListener(httpEventListener)
+        .build(),
+    )
+
+    withTimeoutOrNull(100.milliseconds) {
+      unfurler.unfurl(server.url("ignored"))
+    }
+    assertThat(httpEventListener.requestCanceled).isTrue()
   }
 
   private fun readResourceFile(fileName: String): String {

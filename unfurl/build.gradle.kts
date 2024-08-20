@@ -20,6 +20,7 @@ dependencies {
 
   implementation(libs.jsoup)
   implementation(libs.cache4k)
+  implementation(libs.okhttp.coroutines)
 
   testImplementation(libs.junit)
   testImplementation(libs.assertk)

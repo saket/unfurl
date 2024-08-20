@@ -8,6 +8,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType
 import okhttp3.Request
 import org.jsoup.Jsoup
+import ru.gildor.coroutines.okhttp.await
 import org.jsoup.nodes.Document as JsoupDocument
 
 open class HtmlMetadataUnfurlerExtension(
@@ -24,7 +25,7 @@ open class HtmlMetadataUnfurlerExtension(
   }
 
   @Suppress("MemberVisibilityCanBePrivate")
-  protected fun UnfurlerScope.downloadHtml(url: HttpUrl): JsoupDocument? {
+  protected suspend fun UnfurlerScope.downloadHtml(url: HttpUrl): JsoupDocument? {
     val request: Request = Request.Builder()
       .url(url)
       // Some websites will deny empty/unknown user agents,
@@ -41,7 +42,7 @@ open class HtmlMetadataUnfurlerExtension(
       .build()
 
     return try {
-      httpClient.newCall(request).execute().use { response ->
+      httpClient.newCall(request).await().use { response ->
         val body = response.body
         val redirectedUrl = response.request.url
 
