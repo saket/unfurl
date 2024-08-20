@@ -23,8 +23,6 @@ class UnfurlerTest {
   @get:Rule val server = MockWebServer()
   @get:Rule val timeout = Timeout(5, TimeUnit.SECONDS)
 
-  private val unfurler = Unfurler()
-
   @Test fun `parse HTML correctly`(@TestParameter input: HtmlTestInput) = runTest {
     server.enqueue(
       MockResponse()
@@ -33,14 +31,14 @@ class UnfurlerTest {
     )
 
     val localUrl = server.url(input.url.removePrefix("https:/"))
-    val result = unfurler.unfurl(localUrl)
+    val result = Unfurler().unfurl(localUrl)
     assertThat(result).isEqualTo(input.expected(localUrl))
 
     assertThat(server.requestCount).isEqualTo(1)
   }
 
   @Test fun `websites that deny requests without a recognizable user-agent`() = runTest {
-    val result = unfurler.unfurl("https://www.getproactiv.ca/pdp?productcode=842944100695")
+    val result = Unfurler().unfurl("https://www.getproactiv.ca/pdp?productcode=842944100695")
     assertThat(result).isEqualTo(
       UnfurlResult(
         url = "https://www.getproactiv.ca/proactiv-solution-repairing-treatment/p/842944100695?productcode=842944100695".toHttpUrl(),
@@ -54,7 +52,7 @@ class UnfurlerTest {
 
   @Ignore("Nitter intances get rate limited very frequently. Also see: https://github.com/zedeus/nitter/wiki/Instances")
   @Test fun `websites that deny requests without content type and language headers`() = runTest {
-    val result = unfurler.unfurl("https://nitter.privacydev.net/saketme/status/1716330453311877183")
+    val result = Unfurler().unfurl("https://nitter.privacydev.net/saketme/status/1716330453311877183")
     assertThat(result).isEqualTo(
       UnfurlResult(
         url = "https://nitter.privacydev.net/saketme/status/1716330453311877183".toHttpUrl(),
@@ -73,7 +71,7 @@ class UnfurlerTest {
         .setHeader("Location", "https://www.youtube.com/watch?v=o-YBDTqX_ZU&feature=youtu.be")
     )
 
-    val result = unfurler.unfurl(server.url("/youtu.be/o-YBDTqX_ZU"))
+    val result = Unfurler().unfurl(server.url("/youtu.be/o-YBDTqX_ZU"))
     assertThat(result).isNotNull()
     assertThat(server.takeRequest()).isNotNull()
   }
@@ -86,7 +84,7 @@ class UnfurlerTest {
     )
 
     repeat(3) {
-      val result = unfurler.unfurl(server.url("foo"))
+      val result = Unfurler().unfurl(server.url("foo"))
       assertThat(result?.title).isEqualTo("Great teams merge fast")
     }
     assertThat(server.requestCount).isEqualTo(1)
