@@ -1,6 +1,4 @@
 [versions]
-compileSdk = "34"
-minSdk = "24"
 agp = "8.5.1" # https://maven.google.com/web/index.html?q=gradle.plugin#com.android.library:com.android.library.gradle.plugin
 kotlin = "1.9.20"
 ksp = "1.9.20-1.0.14" # https://github.com/google/ksp/releases
