@@ -4,11 +4,11 @@ import me.saket.unfurl.UnfurlLogger
 import me.saket.unfurl.UnfurlResult
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import org.jsoup.nodes.Document as JsoupDocument
+import com.fleeksoft.ksoup.nodes.Document as KsoupDocument
 
 internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
 
-  fun parse(url: HttpUrl, document: JsoupDocument): UnfurlResult {
+  fun parse(url: HttpUrl, document: KsoupDocument): UnfurlResult {
     return UnfurlResult(
       url = url,
       title = parseTitle(document),
@@ -18,7 +18,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     )
   }
 
-  private fun parseTitle(document: JsoupDocument): String? {
+  private fun parseTitle(document: KsoupDocument): String? {
     val linkTitle = metaTag(document, "twitter:title")
       ?: metaTag(document, "og:title")
       ?: document.title().nullIfBlank()
@@ -29,7 +29,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return linkTitle
   }
 
-  private fun parseDescription(document: JsoupDocument): String? {
+  private fun parseDescription(document: KsoupDocument): String? {
     val linkTitle = metaTag(document, "twitter:description")
       ?: metaTag(document, "og:description")
       ?: metaTag(document, "description")
@@ -40,7 +40,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return linkTitle
   }
 
-  private fun parseThumbnailUrl(document: JsoupDocument): HttpUrl? {
+  private fun parseThumbnailUrl(document: KsoupDocument): HttpUrl? {
     // Twitter's image tag is preferred over facebook's
     // because websites seem to give better images for twitter.
     val thumbnailUrl = metaTag(document, "twitter:image", isUrl = true)
@@ -53,7 +53,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     return (if (needsScheme) "https:$thumbnailUrl" else thumbnailUrl)?.toHttpUrlOrNull()
   }
 
-  private fun parseFaviconUrl(document: JsoupDocument): HttpUrl? {
+  private fun parseFaviconUrl(document: KsoupDocument): HttpUrl? {
     val faviconUrl = linkRelTag(document, "apple-touch-icon")
       ?: linkRelTag(document, "apple-touch-icon-precomposed")
       ?: linkRelTag(document, "shortcut icon")
@@ -69,7 +69,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
       .build()
   }
 
-  private fun metaTag(document: JsoupDocument, attr: String, isUrl: Boolean = false): String? {
+  private fun metaTag(document: KsoupDocument, attr: String, isUrl: Boolean = false): String? {
     return listOf(
       document.select("meta[name=$attr]"),
       document.select("meta[property=$attr]"),
@@ -78,7 +78,7 @@ internal class HtmlMetadataParser(private val logger: UnfurlLogger) {
     }
   }
 
-  private fun linkRelTag(document: JsoupDocument, rel: String): String? {
+  private fun linkRelTag(document: KsoupDocument, rel: String): String? {
     val elements = document.head().select("link[rel=$rel]")
     var largestSizeUrl = elements.firstOrNull()?.attr("abs:href") ?: return null
     var largestSize = 0

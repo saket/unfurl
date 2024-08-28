@@ -7,7 +7,7 @@ ksp = "1.9.20-1.0.14" # https://github.com/google/ksp/releases
 dokka = "1.9.10"
 jsoup = "1.18.1" # https://github.com/jhy/jsoup/releases
 mavenPublish = "0.29.0" # https://github.com/vanniktech/gradle-maven-publish-plugin/releases
-ktor = "2.3.7" # https://github.com/ktorio/ktor/releases
+ktor = "3.0.0-beta-2" # https://github.com/ktorio/ktor/releases
 assertk = "0.28.0"  # https://github.com/willowtreeapps/assertk/releases
 testResources = "0.4.0"
 kotlinx-coroutines = "1.7.3"  # https://github.com/kotlin/kotlinx.coroutines/releases
@@ -21,7 +21,7 @@ moshi = "1.15.0"
 poko = "0.15.3" # https://github.com/drewhamilton/Poko/releases
 metalava = "0.4.0-alpha01"
 cache4k = "0.13.0"  # https://github.com/ReactiveCircus/cache4k/releases
-ksoup = "0.1.4" # https://github.com/fleeksoft/ksoup/releases
+ksoup = "0.1.6-alpha1" # https://github.com/fleeksoft/ksoup/releases
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -50,3 +50,6 @@ clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 mordant = { module = "com.github.ajalt.mordant:mordant", version.ref = "mordant" }
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }

@@ -15,16 +15,20 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       api(libs.kotlinx.coroutines.core)
+      implementation(libs.ktor.client.core)
+      implementation(libs.ksoup)
       implementation(libs.cache4k)
     }
     commonTest.dependencies {
       implementation(libs.assertk)
       implementation(libs.testResources)
       implementation(libs.kotlinx.coroutines.test)
+      implementation(libs.ktor.client.mock)
     }
     jvmMain.dependencies {
       api(libs.okhttp.core)
       implementation(libs.jsoup)
+      implementation(libs.ktor.client.okhttp)
     }
     jvmTest.dependencies {
       implementation(libs.junit)
