@@ -22,7 +22,7 @@ fun Unfurler(
 interface Unfurler {
   suspend fun unfurl(url: String): UnfurlResult?
 
-  companion object;
+  companion object; // Used by extensions.
 }
 
 suspend fun Unfurler.unfurl(url: HttpUrl): UnfurlResult? {

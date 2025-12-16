@@ -6,6 +6,7 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 
 interface UnfurlerExtension {
+  /** @return null if this extension doesn't support unfurling [url]. */
   suspend fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult?
 }
 
