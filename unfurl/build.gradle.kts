@@ -17,6 +17,7 @@ metalava {
 dependencies {
   api(libs.kotlinx.coroutines.core)
   api(libs.okhttp.core)
+  api(libs.bytesize)
 
   implementation(libs.jsoup)
   implementation(libs.cache4k)

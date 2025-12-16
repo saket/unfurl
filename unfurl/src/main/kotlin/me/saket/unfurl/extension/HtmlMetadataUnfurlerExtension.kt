@@ -5,6 +5,9 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
+import me.saket.bytesize.ByteSize
+import me.saket.bytesize.binaryBytes
+import me.saket.bytesize.kibibytes
 import me.saket.unfurl.UnfurlResult
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -21,20 +24,20 @@ import org.jsoup.nodes.Document as JsoupDocument
  * @param httpUserAgents List of `User-Agent` HTTP headers to try when fetching HTML. Multiple user agents
  *   are attempted concurrently, and the first successful response is used. This is useful because some
  *   websites may block or return different content based on the User-Agent.
- * @param htmlByteLimit Maximum number of bytes to download from the HTML page. This is used in the
+ * @param htmlSizeLimit Maximum number of bytes to download from the HTML page. This is used in the
  *   HTTP Range header to limit bandwidth usage, assuming that metadata tags (like Open Graph tags)
  *   are typically present in the initial portion of the HTML. May not be supported by all websites.
  */
 open class HtmlMetadataUnfurlerExtension(
   private val httpUserAgents: List<String>,
-  private val htmlByteLimit: Long = 32_768,
+  private val htmlSizeLimit: ByteSize = 32.kibibytes,
 ) : UnfurlerExtension {
 
   @Suppress("unused")
   constructor(
     httpUserAgent: String = SlackBotUserAgent,
     htmlByteLimit: Long = 32_768,
-  ) : this(listOf(httpUserAgent), htmlByteLimit)
+  ) : this(listOf(httpUserAgent), htmlByteLimit.binaryBytes)
 
   override suspend fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
     return downloadHtml(url)?.let { doc ->
@@ -62,7 +65,7 @@ open class HtmlMetadataUnfurlerExtension(
       // Fetch as little of the page as possible, hoping
       // that the HTML tags are present in the initial range.
       // This was copied from Slack.
-      .header("Range", "bytes=0-$htmlByteLimit")
+      .header("Range", "bytes=0-${htmlSizeLimit.inWholeBytes}")
       .build()
 
     return try {

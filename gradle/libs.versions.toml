@@ -17,6 +17,7 @@ junit = "4.13.2"
 moshi = "1.15.0"
 poko = "0.19.3" # https://github.com/drewhamilton/Poko/releases
 metalava = "0.4.0-alpha03" # https://github.com/tylerbwong/metalava-gradle/releases
+bytesize = "2.1.0" # https://github.com/saket/byte-size/releases
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -43,3 +44,4 @@ clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 mordant = { module = "com.github.ajalt.mordant:mordant", version.ref = "mordant" }
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+bytesize = { module = "me.saket.bytesize:bytesize", version.ref = "bytesize" }

@@ -49,7 +49,7 @@ package me.saket.unfurl.extension {
 
   public class HtmlMetadataUnfurlerExtension implements me.saket.unfurl.extension.UnfurlerExtension {
     ctor public HtmlMetadataUnfurlerExtension(optional String httpUserAgent, optional long htmlByteLimit);
-    ctor public HtmlMetadataUnfurlerExtension(java.util.List<java.lang.String> httpUserAgents, optional long htmlByteLimit);
+    ctor public HtmlMetadataUnfurlerExtension(java.util.List<java.lang.String> httpUserAgents, optional me.saket.bytesize.ByteSize htmlSizeLimit);
     method protected final suspend Object? downloadHtml(me.saket.unfurl.extension.UnfurlerScope, okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super org.jsoup.nodes.Document?>);
     method protected me.saket.unfurl.UnfurlResult? extractMetadata(me.saket.unfurl.extension.UnfurlerScope, org.jsoup.nodes.Document document);
     method public suspend Object? unfurl(me.saket.unfurl.extension.UnfurlerScope, okhttp3.HttpUrl url, kotlin.coroutines.Continuation<? super me.saket.unfurl.UnfurlResult?>);
