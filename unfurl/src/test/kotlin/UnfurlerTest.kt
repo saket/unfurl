@@ -4,22 +4,28 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
+import assertk.assertions.startsWith
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeoutOrNull
+import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
+import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension.Companion.DefaultUserAgents
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -38,8 +44,6 @@ class UnfurlerTest {
     val localUrl = server.url(input.url.removePrefix("https:/"))
     val result = Unfurler().unfurl(localUrl)
     assertThat(result).isEqualTo(input.expected(localUrl))
-
-    assertThat(server.requestCount).isEqualTo(1)
   }
 
   @Test fun `websites that deny requests without a recognizable user-agent`() = runTest {
@@ -69,6 +73,51 @@ class UnfurlerTest {
     )
   }
 
+  @Test fun `try out all user agents for websites that block some agents (real)`() = runTest {
+    val unfurler = Unfurler()
+    val result = unfurler.unfurl("https://aa.com")
+    assertThat(result?.title!!).startsWith("American Airlines", ignoreCase = true)
+  }
+
+  @Test fun `try out all user agents for websites that block some agents (fake)`() = runTest {
+    val userAgents = listOf(
+      "UserAgent 403",
+      "UserAgent Timeout",
+      "UserAgent 200",
+    )
+    val timeoutLatch = CountDownLatch(0)
+
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse {
+        return when (request.getHeader("User-Agent")) {
+          "UserAgent 403" -> {
+            MockResponse()
+              .setResponseCode(403)
+              .setHeader("Content-Type", "text/html")
+              .setBody("<html><head><title>Access Denied</title></head></html>")
+          }
+          "UserAgent 200" -> {
+            MockResponse()
+              .setHeader("Content-Type", "text/html")
+              .setBody(readResourceFile("html_source_saket.me.html"))
+          }
+          "UserAgent Timeout" -> {
+            timeoutLatch.await()
+            error("unreachable code")
+          }
+          else -> error("Unknown user agent = ${request.getHeader("User-Agent")}")
+        }
+      }
+    }
+
+    val unfurler = Unfurler(
+      extensions = listOf(HtmlMetadataUnfurlerExtension(userAgents))
+    )
+    val result = unfurler.unfurl(server.url("/"))
+    assertThat(result?.title).isEqualTo("Great teams merge fast")
+    timeoutLatch.countDown()
+  }
+
   @Test fun `follow redirects`() = runTest {
     server.enqueue(
       MockResponse()
@@ -89,11 +138,15 @@ class UnfurlerTest {
     )
 
     val unfurler = Unfurler()
+    val result = unfurler.unfurl(server.url("foo"))
+    assertThat(result?.title).isEqualTo("Great teams merge fast")
+    val requestCountAfterFirstUnfurl = server.requestCount
+
     repeat(3) {
       val result = unfurler.unfurl(server.url("foo"))
       assertThat(result?.title).isEqualTo("Great teams merge fast")
+      assertThat(server.requestCount).isEqualTo(requestCountAfterFirstUnfurl)
     }
-    assertThat(server.requestCount).isEqualTo(1)
   }
 
   @Test fun `cancel the network call when unfurling is cancelled`() = runTest {
