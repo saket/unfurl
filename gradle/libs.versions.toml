@@ -1,7 +1,7 @@
 [versions]
-kotlin = "1.9.20"
-ksp = "1.9.20-1.0.14" # https://github.com/google/ksp/releases
-dokka = "1.9.10"
+kotlin = "2.2.0"
+ksp = "2.3.3" # https://github.com/google/ksp/releases
+dokka = "2.0.0"
 jsoup = "1.18.1" # https://github.com/jhy/jsoup/releases
 mavenPublish = "0.29.0" # https://github.com/vanniktech/gradle-maven-publish-plugin/releases
 assertk = "0.28.0"  # https://github.com/willowtreeapps/assertk/releases
@@ -15,8 +15,8 @@ clikt = "3.5.2"
 mordant = "2.0.0-beta13"
 junit = "4.13.2"
 moshi = "1.15.0"
-poko = "0.15.3" # https://github.com/drewhamilton/Poko/releases
-metalava = "0.4.0-alpha01"
+poko = "0.19.3" # https://github.com/drewhamilton/Poko/releases
+metalava = "0.4.0-alpha03" # https://github.com/tylerbwong/metalava-gradle/releases
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
