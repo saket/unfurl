@@ -8,8 +8,7 @@ assertk = "0.28.0"  # https://github.com/willowtreeapps/assertk/releases
 cache4k = "0.13.0"  # https://github.com/ReactiveCircus/cache4k/releases
 testResources = "0.4.0"
 kotlinx-coroutines = "1.7.3"  # https://github.com/kotlin/kotlinx.coroutines/releases
-okhttp = "4.12.0" # https://square.github.io/okhttp/changelogs/changelog. Updating to 5.x? See cli/build.gradle.kts.
-okhttp-coroutines = "1.0" # https://github.com/gildor/kotlin-coroutines-okhttp/releases
+okhttp = "5.3.2" # https://square.github.io/okhttp/changelogs/changelog
 testParameterInjector = "1.8"
 clikt = "3.5.2"
 mordant = "2.0.0-beta13"
@@ -33,7 +32,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp-core = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-mockWebServer = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
-okhttp-coroutines = { module = "ru.gildor.coroutines:kotlin-coroutines-okhttp", version.ref = "okhttp-coroutines" }
+okhttp-coroutines = { module = "com.squareup.okhttp3:okhttp-coroutines", version.ref = "okhttp" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
 cache4k = { module = "io.github.reactivecircus.cache4k:cache4k", version.ref = "cache4k" }
 testResources = { module = "com.goncalossilva:resources", version.ref = "testResources" }

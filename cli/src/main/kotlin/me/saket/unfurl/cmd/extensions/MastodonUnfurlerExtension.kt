@@ -10,7 +10,7 @@ import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import ru.gildor.coroutines.okhttp.await
+import okhttp3.coroutines.executeAsync
 import okhttp3.Request as HttpRequest
 
 class MastodonUnfurlerExtension : UnfurlerExtension {
@@ -28,31 +28,29 @@ class MastodonUnfurlerExtension : UnfurlerExtension {
       .build()
 
     try {
-      httpClient.newCall(request).await().use { response ->
-        response.body?.let { body ->
-          val status = moshi.adapter<MastodonStatus>()
-            .fromJson(body.source())!!
-            .thisOrReblogged()
+      httpClient.newCall(request).executeAsync().use { response ->
+        val status = moshi.adapter<MastodonStatus>()
+          .fromJson(response.body.source())!!
+          .thisOrReblogged()
 
-          val htmlMetadata = with(HtmlMetadataUnfurlerExtension()) {
-            unfurl(url)
-          }
-
-          return UnfurlResult(
-            url = status.url!!.toHttpUrl(),
-            title = "@${status.account.acct}",
-            description = status.content,
-            thumbnail = htmlMetadata?.thumbnail,
-            favicon = htmlMetadata?.favicon,
-            extras = mapOf(
-              EngagementStatsExtra::class to EngagementStatsExtra(
-                favorites = status.favourites_count,
-                replies = status.replies_count,
-                boosts = status.reblogs_count,
-              ),
-            ),
-          )
+        val htmlMetadata = with(HtmlMetadataUnfurlerExtension()) {
+          unfurl(url)
         }
+
+        return UnfurlResult(
+          url = status.url!!.toHttpUrl(),
+          title = "@${status.account.acct}",
+          description = status.content,
+          thumbnail = htmlMetadata?.thumbnail,
+          favicon = htmlMetadata?.favicon,
+          extras = mapOf(
+            EngagementStatsExtra::class to EngagementStatsExtra(
+              favorites = status.favourites_count,
+              replies = status.replies_count,
+              boosts = status.reblogs_count,
+            ),
+          ),
+        )
       }
     } catch (e: Throwable) {
       logger.log(e, "Failed to parse status: $url")

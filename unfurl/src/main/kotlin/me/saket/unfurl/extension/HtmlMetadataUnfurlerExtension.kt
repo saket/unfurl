@@ -13,8 +13,8 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType
 import okhttp3.Request
+import okhttp3.coroutines.executeAsync
 import org.jsoup.Jsoup
-import ru.gildor.coroutines.okhttp.await
 import org.jsoup.nodes.Document as JsoupDocument
 
 /**
@@ -69,11 +69,11 @@ open class HtmlMetadataUnfurlerExtension(
       .build()
 
     return try {
-      httpClient.newCall(request).await().use { response ->
+      httpClient.newCall(request).executeAsync().use { response ->
         val body = response.body
         val redirectedUrl = response.request.url
 
-        if (response.isSuccessful && body != null && body.contentType().isHtmlText()) {
+        if (response.isSuccessful && body.contentType().isHtmlText()) {
           Jsoup.parse(
             /* in */ body.source().inputStream(),
             /* charsetName */ null,
