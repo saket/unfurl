@@ -104,7 +104,7 @@ open class HtmlMetadataUnfurlerExtension(
       "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)"
 
     const val ChromeMobileUserAgent =
-      "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36"
+      "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36"
 
     // Also used by Signal.
     const val WhatsAppUserAgent =
