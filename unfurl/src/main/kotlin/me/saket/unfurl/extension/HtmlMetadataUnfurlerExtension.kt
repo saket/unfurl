@@ -3,12 +3,14 @@
 package me.saket.unfurl.extension
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.withContext
 import me.saket.unfurl.UnfurlResult
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -42,8 +44,10 @@ open class HtmlMetadataUnfurlerExtension(
   ) : this(listOf(httpUserAgent))
 
   override suspend fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
-    return downloadHtml(url)?.let { doc ->
-      extractMetadata(doc)
+    return withContext(Dispatchers.IO) {
+      downloadHtml(url)?.let { doc ->
+        extractMetadata(doc)
+      }
     }
   }
 
