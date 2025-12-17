@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import assertk.assertions.startsWith
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -193,6 +194,27 @@ class UnfurlerTest {
     assertThat(duration).isLessThan(0.5.seconds)
   }
 
+  @Test fun `html without head element doesn't crash`() = runTest {
+    server.enqueue(
+      MockResponse()
+        .setHeader("Content-Type", "text/html; charset=UTF-8")
+        .setBody("<html><body><p>No head element here</p></body></html>")
+    )
+
+    val url = server.url("/")
+
+    val result = Unfurler().unfurl(url)
+    assertThat(result).isEqualTo(
+      UnfurlResult(
+        url = url,
+        title = null,
+        description = null,
+        thumbnail = null,
+        favicon = "http://localhost/favicon.ico".toHttpUrl(),
+      )
+    )
+  }
+  
   private fun readResourceFile(fileName: String): String {
     val url = Thread.currentThread().contextClassLoader.getResource(fileName)!!
     return File(url.path).readText()
