@@ -4,6 +4,7 @@ package me.saket.unfurl.extension
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
@@ -14,6 +15,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType
 import okhttp3.Request
 import okhttp3.coroutines.executeAsync
+import kotlin.time.Duration.Companion.milliseconds
 import org.jsoup.nodes.Document as JsoupDocument
 import org.jsoup.parser.Parser as JsoupParser
 import org.jsoup.parser.StreamParser as JsoupStreamParser
@@ -48,7 +50,16 @@ open class HtmlMetadataUnfurlerExtension(
   @OptIn(ExperimentalCoroutinesApi::class)
   protected suspend fun UnfurlerScope.downloadHtml(url: HttpUrl): JsoupDocument? {
     return httpUserAgents
-      .map { userAgent -> flow { emit(downloadHtml(url, userAgent)) } }
+      .mapIndexed { index, userAgent ->
+        flow {
+          if (index > 0) {
+            // Most web pages should be reachable using the first user agent. Delay fallback
+            // user agents to give the first one a chance to succeed instead of firing all at once.
+            delay(500.milliseconds)
+          }
+          emit(downloadHtml(url, userAgent))
+        }
+      }
       .merge()
       .filterNotNull()
       .firstOrNull()

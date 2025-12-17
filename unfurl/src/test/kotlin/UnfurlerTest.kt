@@ -4,7 +4,6 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
-import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import assertk.assertions.startsWith
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -46,6 +45,7 @@ class UnfurlerTest {
     val localUrl = server.url(input.url.removePrefix("https:/"))
     val result = Unfurler().unfurl(localUrl)
     assertThat(result).isEqualTo(input.expected(localUrl))
+    assertThat(server.requestCount).isEqualTo(1)
   }
 
   @Test fun `websites that deny requests without a recognizable user-agent`() = runTest {
@@ -214,7 +214,7 @@ class UnfurlerTest {
       )
     )
   }
-  
+
   private fun readResourceFile(fileName: String): String {
     val url = Thread.currentThread().contextClassLoader.getResource(fileName)!!
     return File(url.path).readText()
