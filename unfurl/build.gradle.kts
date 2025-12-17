@@ -17,7 +17,6 @@ metalava {
 dependencies {
   api(libs.kotlinx.coroutines.core)
   api(libs.okhttp.core)
-  api(libs.bytesize)
 
   implementation(libs.jsoup)
   implementation(libs.cache4k)
@@ -25,6 +24,7 @@ dependencies {
 
   testImplementation(libs.junit)
   testImplementation(libs.assertk)
+  testImplementation(libs.bytesize)
   testImplementation(libs.testResources)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.testParameterInjector)

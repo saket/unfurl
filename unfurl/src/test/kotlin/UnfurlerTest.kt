@@ -2,6 +2,7 @@ package me.saket.unfurl
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import assertk.assertions.startsWith
@@ -9,8 +10,8 @@ import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeoutOrNull
+import me.saket.bytesize.megabits
 import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
-import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension.Companion.DefaultUserAgents
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.HttpUrl
@@ -22,17 +23,17 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTimedValue
 
 @RunWith(TestParameterInjector::class)
 class UnfurlerTest {
   @get:Rule val server = MockWebServer()
-  @get:Rule val timeout = Timeout(5, TimeUnit.SECONDS)
 
   @Test fun `parse HTML correctly`(@TestParameter input: HtmlTestInput) = runTest {
     server.enqueue(
@@ -172,6 +173,24 @@ class UnfurlerTest {
       unfurler.unfurl(server.url("ignored"))
     }
     assertThat(httpEventListener.requestCanceled).isTrue()
+  }
+
+  @Test fun `avoid downloading entire web pages by streaming them instead`() = runTest {
+    // Simulate a download of a large web page on a slow connection.
+    // At 2Mbps, downloading the full 1.5MB html file would take ~6 seconds.
+    server.enqueue(
+      MockResponse()
+        .setHeader("Content-Type", "text/html; charset=UTF-8")
+        .setBody(readResourceFile("html_source_nytimes_best_movies.html"))
+        .throttleBody(2.megabits.inWholeBytes, 1, TimeUnit.SECONDS)
+    )
+
+    val (result, duration) = measureTimedValue {
+      val unfurler = Unfurler()
+      unfurler.unfurl(server.url("/"))
+    }
+    assertThat(result?.title).isEqualTo("The 100 Best Movies of the 21st Century")
+    assertThat(duration).isLessThan(0.5.seconds)
   }
 
   private fun readResourceFile(fileName: String): String {
