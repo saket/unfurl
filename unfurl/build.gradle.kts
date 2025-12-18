@@ -25,6 +25,7 @@ dependencies {
   testImplementation(libs.junit)
   testImplementation(libs.assertk)
   testImplementation(libs.bytesize)
+  testImplementation(libs.turbine)
   testImplementation(libs.testResources)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.testParameterInjector)

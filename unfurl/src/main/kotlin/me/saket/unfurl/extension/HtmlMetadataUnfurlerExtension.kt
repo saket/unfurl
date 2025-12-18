@@ -95,6 +95,10 @@ open class HtmlMetadataUnfurlerExtension(
             return jsoup.document()
           }
         } else {
+          logger.log(
+            "Failed to download HTML for $url using user agent: $userAgent. " +
+              "Received HTTP status: ${response.code}, Content-Type: ${body.contentType()}."
+          )
           return null
         }
       }

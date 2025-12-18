@@ -1,14 +1,18 @@
 package me.saket.unfurl
 
+import app.cash.turbine.Turbine
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
-import assertk.assertions.isTrue
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import me.saket.bytesize.megabits
 import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
@@ -23,6 +27,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -34,6 +39,7 @@ import kotlin.time.measureTimedValue
 @RunWith(TestParameterInjector::class)
 class UnfurlerTest {
   @get:Rule val server = MockWebServer()
+  @get:Rule val timeout = Timeout(10, TimeUnit.SECONDS)
 
   @Test fun `parse HTML correctly`(@TestParameter input: HtmlTestInput) = runTest {
     server.enqueue(
@@ -156,16 +162,21 @@ class UnfurlerTest {
   }
 
   @Test fun `cancel the network call when unfurling is cancelled`() = runTest {
-    server.enqueue(
-      MockResponse()
-        .setBodyDelay(Long.MAX_VALUE, TimeUnit.SECONDS)
-    )
-
-    val httpEventListener = object : EventListener() {
-      var requestCanceled = false
-      override fun canceled(call: Call) {
-        requestCanceled = true
+    val neverCompleteThisRequest = CountDownLatch(1)
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse {
+        // This uses a CountDownLatch instead of MockWebServer's built-in
+        // delay/throttle APIs because they use Thread.sleep(), which blocks
+        // the thread and prevents proper coroutine cancellation.
+        neverCompleteThisRequest.await()
+        return MockResponse()
       }
+    }
+    val httpEventListener = object : EventListener() {
+      val startedCalls = Turbine<Call>(name = "started calls")
+      val canceledCalls = Turbine<Call>(name = "canceled calls")
+      override fun canceled(call: Call) = canceledCalls.add(call)
+      override fun callStart(call: Call) = startedCalls.add(call)
     }
     val unfurler = Unfurler(
       httpClient = Unfurler.defaultOkHttpClient()
@@ -174,10 +185,17 @@ class UnfurlerTest {
         .build(),
     )
 
-    withTimeoutOrNull(100.milliseconds) {
-      unfurler.unfurl(server.url("ignored"))
+    withContext(Dispatchers.NoDelaySkipping) {
+      withTimeoutOrNull(1000.milliseconds) {
+        unfurler.unfurl(server.url("ignored"))
+      }
     }
-    assertThat(httpEventListener.requestCanceled).isTrue()
+
+    httpEventListener.startedCalls.awaitItem()
+    httpEventListener.canceledCalls.awaitItem()
+
+    // Shut down the web server.
+    neverCompleteThisRequest.countDown()
   }
 
   @Test fun `avoid downloading entire web pages by streaming them instead`() = runTest {
@@ -273,3 +291,9 @@ class UnfurlerTest {
     )
   }
 }
+
+/** Because runTest() skips delays by default. */
+@Suppress("UnusedReceiverParameter")
+@OptIn(ExperimentalCoroutinesApi::class)
+val Dispatchers.NoDelaySkipping: CoroutineDispatcher
+  get() = Dispatchers.Default.limitedParallelism(1)

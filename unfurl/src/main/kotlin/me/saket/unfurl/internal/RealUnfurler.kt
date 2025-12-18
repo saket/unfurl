@@ -43,7 +43,7 @@ internal class RealUnfurler(
         throw e
       } else {
         val extension: UnfurlerExtension = this
-        logger.log(e, "Failed to unfurl '$url' using $extension")
+        logger.log(e, "Failed to unfurl $url using $extension")
         return null
       }
     }
