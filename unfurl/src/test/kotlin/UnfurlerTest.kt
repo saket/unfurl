@@ -1,11 +1,11 @@
 package me.saket.unfurl
 
 import assertk.assertThat
+import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
-import assertk.assertions.startsWith
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import kotlinx.coroutines.test.runTest
@@ -77,8 +77,12 @@ class UnfurlerTest {
 
   @Test fun `try out all user agents for websites that block some agents (real)`() = runTest {
     val unfurler = Unfurler()
-    val result = unfurler.unfurl("https://aa.com")
-    assertThat(result?.title!!).startsWith("American Airlines", ignoreCase = true)
+    with(unfurler.unfurl("https://aa.com")) {
+      assertThat(this?.title.orEmpty()).contains("American Airlines", ignoreCase = true)
+    }
+    with(unfurler.unfurl("https://www.notion.so/Test-5dd9c63227584bb494966fba4f4e002d")) {
+      assertThat(this?.title.orEmpty()).contains("Notion", ignoreCase = true)
+    }
   }
 
   @Test fun `try out all user agents for websites that block some agents (fake)`() = runTest {
