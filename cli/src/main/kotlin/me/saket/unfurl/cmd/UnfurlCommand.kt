@@ -61,7 +61,7 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
       unfurler.unfurl(url)
     }
     if (unfurled == null) {
-      echo("Couldn't unfurl", err = true)
+      echo("Failed to unfurl $url", err = true)
     } else {
       echo()
       printUnfurledLink(unfurled)

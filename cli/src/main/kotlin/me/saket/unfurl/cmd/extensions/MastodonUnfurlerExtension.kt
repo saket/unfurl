@@ -11,6 +11,7 @@ import me.saket.unfurl.extension.UnfurlerScope
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.coroutines.executeAsync
+import kotlin.coroutines.cancellation.CancellationException
 import okhttp3.Request as HttpRequest
 
 class MastodonUnfurlerExtension : UnfurlerExtension {
@@ -53,7 +54,11 @@ class MastodonUnfurlerExtension : UnfurlerExtension {
         )
       }
     } catch (e: Throwable) {
-      logger.log(e, "Failed to parse status: $url")
+      if (e is CancellationException) {
+        throw e
+      } else {
+        logger.log(e, "Failed to parse status: $url")
+      }
     }
     return null
   }

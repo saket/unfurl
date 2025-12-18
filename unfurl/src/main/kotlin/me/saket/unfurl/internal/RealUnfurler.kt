@@ -6,8 +6,10 @@ import me.saket.unfurl.Unfurler
 import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerExtension
 import me.saket.unfurl.extension.UnfurlerScope
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
+import kotlin.coroutines.cancellation.CancellationException
 
 internal class RealUnfurler(
   cacheSize: Int,
@@ -25,15 +27,24 @@ internal class RealUnfurler(
 
   override suspend fun unfurl(url: String): UnfurlResult? {
     return cache.computeIfAbsent(url) {
-      try {
-        url.toHttpUrlOrNull()?.let { httpUrl ->
-          extensions.firstNotNullOfOrNull { extension ->
-            extension.run { extensionScope.unfurl(httpUrl) }
-          }
+      url.toHttpUrlOrNull()?.let { httpUrl ->
+        extensions.firstNotNullOfOrNull { extension ->
+          extension.unfurlSafely(httpUrl)
         }
-      } catch (e: Throwable) {
-        logger.log(e, "Failed to unfurl '$url'")
-        null
+      }
+    }
+  }
+
+  private suspend fun UnfurlerExtension.unfurlSafely(url: HttpUrl): UnfurlResult? {
+    try {
+      return extensionScope.unfurl(url)
+    } catch (e: Throwable) {
+      if (e is CancellationException) {
+        throw e
+      } else {
+        val extension: UnfurlerExtension = this
+        logger.log(e, "Failed to unfurl '$url' using $extension")
+        return null
       }
     }
   }

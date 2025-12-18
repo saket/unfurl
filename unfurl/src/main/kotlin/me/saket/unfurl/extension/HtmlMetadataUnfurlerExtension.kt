@@ -79,7 +79,7 @@ open class HtmlMetadataUnfurlerExtension(
       .header("Accept-Language", "en-US,en;q=0.5")
       .build()
 
-    return try {
+    try {
       httpClient.newCall(request).executeAsync().use { response ->
         val body = response.body
         val redirectedUrl = response.request.url
@@ -92,17 +92,19 @@ open class HtmlMetadataUnfurlerExtension(
             // Its return value is discarded because HtmlMetadataParser requires the entire document.
             // Fortunately, the document is built lazily, so Jsoup doesn't download the rest of the HTML.
             jsoup.selectFirst("head")
-            jsoup.document()
+            return jsoup.document()
           }
         } else {
-          null
+          return null
         }
       }
     } catch (e: Throwable) {
-      if (e !is CancellationException) {
+      if (e is CancellationException) {
+        throw e
+      } else {
         logger.log(e, "Failed to download HTML for $url using user agent: $userAgent")
+        return null
       }
-      null
     }
   }
 
