@@ -16,14 +16,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import me.saket.bytesize.megabits
 import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
+import mockwebserver3.Dispatcher
+import mockwebserver3.MockResponse
+import mockwebserver3.RecordedRequest
+import mockwebserver3.junit4.MockWebServerRule
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.mockwebserver.Dispatcher
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
-import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -38,14 +38,16 @@ import kotlin.time.measureTimedValue
 
 @RunWith(TestParameterInjector::class)
 class UnfurlerTest {
-  @get:Rule val server = MockWebServer()
   @get:Rule val timeout = Timeout(10, TimeUnit.SECONDS)
+  @get:Rule val serverRule = MockWebServerRule()
+  private val server get() = serverRule.server
 
   @Test fun `parse HTML correctly`(@TestParameter input: HtmlTestInput) = runTest {
     server.enqueue(
-      MockResponse()
+      MockResponse.Builder()
         .setHeader("Content-Type", "text/html; charset=UTF-8")
-        .setBody(readResourceFile(input.htmlFileName))
+        .body(readResourceFile(input.htmlFileName))
+        .build()
     )
 
     val localUrl = server.url(input.url.removePrefix("https:/"))
@@ -101,23 +103,25 @@ class UnfurlerTest {
 
     server.dispatcher = object : Dispatcher() {
       override fun dispatch(request: RecordedRequest): MockResponse {
-        return when (request.getHeader("User-Agent")) {
+        return when (request.headers["User-Agent"]) {
           "UserAgent 403" -> {
-            MockResponse()
-              .setResponseCode(403)
+            MockResponse.Builder()
+              .code(403)
               .setHeader("Content-Type", "text/html")
-              .setBody("<html><head><title>Access Denied</title></head></html>")
+              .body("<html><head><title>Access Denied</title></head></html>")
+              .build()
           }
           "UserAgent 200" -> {
-            MockResponse()
+            MockResponse.Builder()
               .setHeader("Content-Type", "text/html")
-              .setBody(readResourceFile("html_source_saket.me.html"))
+              .body(readResourceFile("html_source_saket.me.html"))
+              .build()
           }
           "UserAgent Timeout" -> {
             timeoutLatch.await()
             error("unreachable code")
           }
-          else -> error("Unknown user agent = ${request.getHeader("User-Agent")}")
+          else -> error("Unknown user agent = ${request.headers["User-Agent"]}")
         }
       }
     }
@@ -132,9 +136,10 @@ class UnfurlerTest {
 
   @Test fun `follow redirects`() = runTest {
     server.enqueue(
-      MockResponse()
-        .setResponseCode(303)
+      MockResponse.Builder()
+        .code(303)
         .setHeader("Location", "https://www.youtube.com/watch?v=o-YBDTqX_ZU&feature=youtu.be")
+        .build()
     )
 
     val result = Unfurler().unfurl(server.url("/youtu.be/o-YBDTqX_ZU"))
@@ -144,9 +149,10 @@ class UnfurlerTest {
 
   @Test fun `cache unfurled urls`() = runTest {
     server.enqueue(
-      MockResponse()
+      MockResponse.Builder()
         .setHeader("Content-Type", "text/html; charset=UTF-8")
-        .setBody(readResourceFile("html_source_saket.me.html"))
+        .body(readResourceFile("html_source_saket.me.html"))
+        .build()
     )
 
     val unfurler = Unfurler()
@@ -169,7 +175,7 @@ class UnfurlerTest {
         // delay/throttle APIs because they use Thread.sleep(), which blocks
         // the thread and prevents proper coroutine cancellation.
         neverCompleteThisRequest.await()
-        return MockResponse()
+        return MockResponse.Builder().build()
       }
     }
     val httpEventListener = object : EventListener() {
@@ -202,10 +208,11 @@ class UnfurlerTest {
     // Simulate a download of a large web page on a slow connection.
     // At 2Mbps, downloading the full 1.5MB html file would take ~6 seconds.
     server.enqueue(
-      MockResponse()
+      MockResponse.Builder()
         .setHeader("Content-Type", "text/html; charset=UTF-8")
-        .setBody(readResourceFile("html_source_nytimes_best_movies.html"))
+        .body(readResourceFile("html_source_nytimes_best_movies.html"))
         .throttleBody(2.megabits.inWholeBytes, 1, TimeUnit.SECONDS)
+        .build()
     )
 
     val (result, duration) = measureTimedValue {
@@ -218,9 +225,10 @@ class UnfurlerTest {
 
   @Test fun `html without head element doesn't crash`() = runTest {
     server.enqueue(
-      MockResponse()
+      MockResponse.Builder()
         .setHeader("Content-Type", "text/html; charset=UTF-8")
-        .setBody("<html><body><p>No head element here</p></body></html>")
+        .body("<html><body><p>No head element here</p></body></html>")
+        .build()
     )
 
     val url = server.url("/")
