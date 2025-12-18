@@ -15,7 +15,7 @@ internal class RealUnfurler(
   private val httpClient: OkHttpClient,
   private val logger: UnfurlLogger,
 ) : Unfurler {
-  private val extensions = extensions + HtmlMetadataUnfurlerExtension(HtmlMetadataUnfurlerExtension.DefaultUserAgents)
+  private val extensions = extensions + HtmlMetadataUnfurlerExtension()
   private val cache = NullableLruCache<String, UnfurlResult?>(cacheSize)
 
   private val extensionScope = object : UnfurlerScope {

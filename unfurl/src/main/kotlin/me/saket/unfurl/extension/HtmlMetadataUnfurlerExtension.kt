@@ -31,7 +31,7 @@ import org.jsoup.parser.StreamParser as JsoupStreamParser
  *   websites may block or return different content based on the User-Agent.
  */
 open class HtmlMetadataUnfurlerExtension(
-  private val httpUserAgents: List<String>,
+  private val httpUserAgents: List<String> = DefaultUserAgents,
 ) : UnfurlerExtension {
 
   @Deprecated(
@@ -39,7 +39,7 @@ open class HtmlMetadataUnfurlerExtension(
   )
   @Suppress("unused")
   constructor(
-    httpUserAgent: String = SlackBotUserAgent,
+    httpUserAgent: String = DefaultUserAgents.first(),
     htmlByteLimit: Long = -1,
   ) : this(listOf(httpUserAgent))
 
@@ -117,6 +117,12 @@ open class HtmlMetadataUnfurlerExtension(
 
   @Suppress("ConstPropertyName", "unused")
   companion object {
+    val DefaultUserAgents: List<String> = listOf(
+      WhatsAppUserAgent,
+      SlackBotUserAgent,
+      ChromeMobileUserAgent,
+    )
+
     const val SlackBotUserAgent =
       "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)"
 
@@ -126,11 +132,5 @@ open class HtmlMetadataUnfurlerExtension(
     // Also used by Signal.
     const val WhatsAppUserAgent =
       "WhatsApp/2"
-
-    val DefaultUserAgents: List<String> = listOf(
-      WhatsAppUserAgent,
-      SlackBotUserAgent,
-      ChromeMobileUserAgent,
-    )
   }
 }
