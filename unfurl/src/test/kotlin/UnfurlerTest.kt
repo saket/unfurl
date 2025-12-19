@@ -3,6 +3,7 @@ package me.saket.unfurl
 import app.cash.turbine.Turbine
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
@@ -132,6 +133,29 @@ class UnfurlerTest {
     val result = unfurler.unfurl(server.url("/"))
     assertThat(result?.title).isEqualTo("Great teams merge fast")
     timeoutLatch.countDown()
+  }
+
+  @Test fun `when the first user agent succeeds, do not use any remaining agents`() = runTest {
+    val userAgents = listOf("UserAgent 1", "UserAgent 2", "UserAgent 3")
+    val requestedUserAgents = mutableListOf<String>()
+
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse {
+        val userAgent = request.headers["User-Agent"]!!
+        requestedUserAgents.add(userAgent)
+        return MockResponse.Builder()
+          .setHeader("Content-Type", "text/html")
+          .body(readResourceFile("html_source_saket.me.html"))
+          .build()
+      }
+    }
+
+    val unfurler = Unfurler(
+      extensions = listOf(HtmlMetadataUnfurlerExtension(userAgents))
+    )
+    val result = unfurler.unfurl(server.url("/"))
+    assertThat(result?.title).isEqualTo("Great teams merge fast")
+    assertThat(requestedUserAgents).containsExactly("UserAgent 1")
   }
 
   @Test fun `follow redirects`() = runTest {
