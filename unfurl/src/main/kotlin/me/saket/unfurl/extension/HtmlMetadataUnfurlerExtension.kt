@@ -2,14 +2,8 @@
 
 package me.saket.unfurl.extension
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withContext
 import me.saket.unfurl.UnfurlResult
 import okhttp3.HttpUrl
@@ -18,6 +12,7 @@ import okhttp3.MediaType
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.coroutines.executeAsync
+import java.io.IOException
 import kotlin.time.Duration.Companion.milliseconds
 import org.jsoup.nodes.Document as JsoupDocument
 import org.jsoup.parser.Parser as JsoupParser
@@ -35,14 +30,8 @@ open class HtmlMetadataUnfurlerExtension(
   private val httpUserAgents: List<String> = DefaultUserAgents,
 ) : UnfurlerExtension {
 
-  @Deprecated(
-    "htmlByteLimit is no longer used. Unfurler automatically stops downloading HTML once the <head> tag is received."
-  )
   @Suppress("unused")
-  constructor(
-    httpUserAgent: String = DefaultUserAgents.first(),
-    htmlByteLimit: Long = -1,
-  ) : this(listOf(httpUserAgent))
+  constructor(httpUserAgent: String) : this(listOf(httpUserAgent))
 
   override suspend fun UnfurlerScope.unfurl(url: HttpUrl): UnfurlResult? {
     return withContext(Dispatchers.IO) {
@@ -52,26 +41,28 @@ open class HtmlMetadataUnfurlerExtension(
     }
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   protected suspend fun UnfurlerScope.downloadHtml(url: HttpUrl): JsoupDocument? {
-    val httpResponse = httpUserAgents
-      .mapIndexed { index, userAgent ->
-        flow {
+    return winnerTakesItAll {
+      for ((index, userAgent) in httpUserAgents.withIndex()) {
+        attempt {
           if (index > 0) {
             // Most web pages should be reachable using the first user agent. Delay fallback
             // user agents to give the first one a chance to succeed instead of firing all at once.
             delay(500.milliseconds)
           }
-          emit(fetchHtmlResponse(url, userAgent))
+          requestHtml(url, userAgent)?.use { response ->
+            if (response.isSuccessful && response.body.contentType().isHtmlText()) {
+              claimVictory {
+                parseHtml(response)
+              }
+            }
+          }
         }
       }
-      .merge()
-      .filterNotNull()
-      .firstOrNull()
-    return httpResponse?.extractHtml()
+    }
   }
 
-  private suspend fun UnfurlerScope.fetchHtmlResponse(url: HttpUrl, userAgent: String): Response? {
+  private suspend fun UnfurlerScope.requestHtml(url: HttpUrl, userAgent: String): Response? {
     logger.log("Downloading HTML for $url using user agent: $userAgent")
 
     val request: Request = Request.Builder()
@@ -82,41 +73,25 @@ open class HtmlMetadataUnfurlerExtension(
       .build()
 
     try {
-      val response = httpClient.newCall(request).executeAsync()
-      val contentType = response.body.contentType()
-      if (response.isSuccessful && contentType.isHtmlText()) {
-        return response
-      } else {
-        logger.log(
-          "Failed to download HTML for $url using user agent: $userAgent. " +
-            "Received HTTP status: ${response.code}, Content-Type: $contentType."
-        )
-        return null
-      }
-    } catch (e: Throwable) {
-      if (e is CancellationException) {
-        throw e
-      } else {
-        logger.log(e, "Failed to download HTML for $url using user agent: $userAgent")
-        return null
-      }
+      return httpClient.newCall(request).executeAsync()
+    } catch (e: IOException) {
+      logger.log(e, "Failed to download HTML for $url using user agent: $userAgent")
+      return null
     }
   }
 
-  private fun Response.extractHtml(): JsoupDocument {
-    this.use { response ->
-      val jsoup = JsoupStreamParser(JsoupParser.htmlParser())
-      jsoup.parse(
-        /* input = */ response.body.charStream().buffered(),
-        /* baseUri = */ response.request.url.toString(),
-      )
-      jsoup.use { jsoup ->
-        // Note to self: selectFirst() parses the stream until it finds the <head> block.
-        // Its return value is discarded because HtmlMetadataParser requires the entire document.
-        // Fortunately, the document is built lazily, so Jsoup doesn't download the rest of the HTML.
-        jsoup.selectFirst("head")
-        return jsoup.document()
-      }
+  private fun parseHtml(response: Response): JsoupDocument {
+    val jsoup = JsoupStreamParser(JsoupParser.htmlParser())
+    jsoup.parse(
+      /* input = */ response.body.charStream().buffered(),
+      /* baseUri = */ response.request.url.toString(),
+    )
+    jsoup.use {
+      // Note to self: selectFirst() parses the stream until it finds the <head> block.
+      // Its return value is discarded because HtmlMetadataParser requires the entire document.
+      // Fortunately, the document is built lazily, so Jsoup doesn't download the rest of the HTML.
+      it.selectFirst("head")
+      return it.document()
     }
   }
 
@@ -128,6 +103,13 @@ open class HtmlMetadataUnfurlerExtension(
   private fun MediaType?.isHtmlText(): Boolean {
     return this != null && type == "text" && subtype == "html"
   }
+
+  @Suppress("unused")
+  @Deprecated("htmlByteLimit is no longer used. HTML downloads now automatically stop once the <head> tag is received.")
+  constructor(
+    httpUserAgent: String = DefaultUserAgents.first(),
+    htmlByteLimit: Long = -1,
+  ) : this(listOf(httpUserAgent))
 
   @Suppress("ConstPropertyName", "unused")
   companion object {

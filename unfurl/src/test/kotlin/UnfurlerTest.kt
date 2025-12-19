@@ -4,9 +4,11 @@ import app.cash.turbine.Turbine
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsExactly
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import kotlinx.coroutines.CoroutineDispatcher
@@ -100,7 +102,6 @@ class UnfurlerTest {
       "UserAgent Timeout",
       "UserAgent 200",
     )
-    val timeoutLatch = CountDownLatch(0)
 
     server.dispatcher = object : Dispatcher() {
       override fun dispatch(request: RecordedRequest): MockResponse {
@@ -112,27 +113,35 @@ class UnfurlerTest {
               .body("<html><head><title>Access Denied</title></head></html>")
               .build()
           }
+          "UserAgent Timeout" -> {
+            MockResponse.Builder()
+              .headersDelay(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
+              .build()
+          }
           "UserAgent 200" -> {
             MockResponse.Builder()
               .setHeader("Content-Type", "text/html")
               .body(readResourceFile("html_source_saket.me.html"))
               .build()
           }
-          "UserAgent Timeout" -> {
-            timeoutLatch.await()
-            error("unreachable code")
-          }
           else -> error("Unknown user agent = ${request.headers["User-Agent"]}")
         }
       }
     }
 
+    val responseBodyTracker = ResponseBodyTracker()
     val unfurler = Unfurler(
-      extensions = listOf(HtmlMetadataUnfurlerExtension(userAgents))
+      extensions = listOf(HtmlMetadataUnfurlerExtension(userAgents)),
+      httpClient = Unfurler.defaultOkHttpClient()
+        .newBuilder()
+        .eventListener(responseBodyTracker)
+        .build(),
     )
     val result = unfurler.unfurl(server.url("/"))
     assertThat(result?.title).isEqualTo("Great teams merge fast")
-    timeoutLatch.countDown()
+
+    // Verify that all response bodies were closed.
+    assertThat(responseBodyTracker.openBodies).isEmpty()
   }
 
   @Test fun `when the first user agent succeeds, do not use any remaining agents`() = runTest {
@@ -143,6 +152,7 @@ class UnfurlerTest {
       override fun dispatch(request: RecordedRequest): MockResponse {
         val userAgent = request.headers["User-Agent"]!!
         requestedUserAgents.add(userAgent)
+
         return MockResponse.Builder()
           .setHeader("Content-Type", "text/html")
           .body(readResourceFile("html_source_saket.me.html"))
@@ -155,7 +165,64 @@ class UnfurlerTest {
     )
     val result = unfurler.unfurl(server.url("/"))
     assertThat(result?.title).isEqualTo("Great teams merge fast")
+
+    // The user agents after the first one are delayed. If the first one
+    // returns within the delay, the remaining ones should not even fire.
     assertThat(requestedUserAgents).containsExactly("UserAgent 1")
+  }
+
+  @Test fun `when the second user agent succeeds, response bodies of remaining requests are not streamed`() = runTest {
+    val userAgents = listOf(
+      "UserAgent 403",
+      "UserAgent Timeout",
+      "UserAgent 200",
+    )
+
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse {
+        return when (request.headers["User-Agent"]) {
+          "UserAgent 403" -> {
+            MockResponse.Builder()
+              .code(403)
+              .setHeader("Content-Type", "text/html")
+              .body("<html><head><title>Forbidden</title></head></html>")
+              .build()
+          }
+          "UserAgent Timeout" -> {
+            MockResponse.Builder()
+              .headersDelay(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
+              .build()
+          }
+          "UserAgent 200" -> {
+            MockResponse.Builder()
+              .setHeader("Content-Type", "text/html")
+              .body(readResourceFile("html_source_saket.me.html"))
+              .headersDelay(500, TimeUnit.MILLISECONDS)
+              .build()
+          }
+          else -> error("Unknown user agent")
+        }
+      }
+    }
+
+    val streamedUserAgents = mutableListOf<String>()
+    val eventListener = object : EventListener() {
+      override fun responseBodyStart(call: Call) {
+        streamedUserAgents.add(call.request().header("User-Agent")!!)
+      }
+    }
+
+    val unfurler = Unfurler(
+      httpClient = Unfurler.defaultOkHttpClient()
+        .newBuilder()
+        .eventListener(eventListener)
+        .build(),
+      extensions = listOf(HtmlMetadataUnfurlerExtension(userAgents)),
+    )
+
+    val result = unfurler.unfurl(server.url("/"))
+    assertThat(result?.title).isEqualTo("Great teams merge fast")
+    assertThat(streamedUserAgents).containsExactly("UserAgent 403", "UserAgent 200")
   }
 
   @Test fun `follow redirects`() = runTest {
@@ -247,6 +314,30 @@ class UnfurlerTest {
     assertThat(duration).isLessThan(0.5.seconds)
   }
 
+  @Test fun `response bodies are closed after failed unfurl`() = runTest {
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest) =
+        MockResponse.Builder()
+          .code(403)
+          .setHeader("Content-Type", "text/html")
+          .body("<html><head><title>Forbidden</title></head></html>")
+          .build()
+    }
+
+    val responseBodyTracker = ResponseBodyTracker()
+    val unfurler = Unfurler(
+      httpClient = Unfurler.defaultOkHttpClient()
+        .newBuilder()
+        .eventListener(responseBodyTracker)
+        .build(),
+      extensions = listOf(HtmlMetadataUnfurlerExtension(listOf("agent1", "agent2", "agent3")))
+    )
+
+    val result = unfurler.unfurl(server.url("/"))
+    assertThat(result).isNull()
+    assertThat(responseBodyTracker.openBodies).isEmpty()
+  }
+
   @Test fun `html without head element doesn't crash`() = runTest {
     server.enqueue(
       MockResponse.Builder()
@@ -329,3 +420,15 @@ class UnfurlerTest {
 @OptIn(ExperimentalCoroutinesApi::class)
 val Dispatchers.NoDelaySkipping: CoroutineDispatcher
   get() = Dispatchers.Default.limitedParallelism(1)
+
+private class ResponseBodyTracker : EventListener() {
+  var openBodies = mutableListOf<Call>()
+
+  override fun responseBodyStart(call: Call) {
+    openBodies.add(call)
+  }
+
+  override fun responseBodyEnd(call: Call, byteCount: Long) {
+    openBodies.remove(call)
+  }
+}
