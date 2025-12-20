@@ -35,7 +35,11 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
   private val url: String by argument("url")
   private val debug: Boolean by option("-d", "--debug").flag(default = false)
 
-  private val terminal = Terminal()
+  private val terminal = Terminal(
+    // Explicitly enable hyperlinks for mordant to emit OSC 8 escape sequences for
+    // clickable hyperlinks in tables. Auto-detection doesn't always work in all terminals.
+    hyperlinks = true,
+  )
   private val maxWidthOfTableColumn = 52
 
   override fun run() = runBlocking {
