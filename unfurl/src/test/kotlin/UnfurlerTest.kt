@@ -1,6 +1,7 @@
 package me.saket.unfurl
 
 import app.cash.turbine.Turbine
+import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsExactly
@@ -14,6 +15,12 @@ import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -103,31 +110,19 @@ class UnfurlerTest {
       "UserAgent 200",
     )
 
-    server.dispatcher = object : Dispatcher() {
+    val serverDispatcher = object : Dispatcher() {
+      val requestedAgents = Turbine<String>(name = "requested agents")
+      val responses = MutableStateFlow(mapOf<String, MockResponse>())
+
       override fun dispatch(request: RecordedRequest): MockResponse {
-        return when (request.headers["User-Agent"]) {
-          "UserAgent 403" -> {
-            MockResponse.Builder()
-              .code(403)
-              .setHeader("Content-Type", "text/html")
-              .body("<html><head><title>Access Denied</title></head></html>")
-              .build()
-          }
-          "UserAgent Timeout" -> {
-            MockResponse.Builder()
-              .headersDelay(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
-              .build()
-          }
-          "UserAgent 200" -> {
-            MockResponse.Builder()
-              .setHeader("Content-Type", "text/html")
-              .body(readResourceFile("html_source_saket.me.html"))
-              .build()
-          }
-          else -> error("Unknown user agent = ${request.headers["User-Agent"]}")
+        val userAgent = request.headers["User-Agent"]!!
+        requestedAgents.add(userAgent)
+        return runBlocking {
+          responses.mapNotNull { it[userAgent] }.first()
         }
       }
     }
+    server.dispatcher = serverDispatcher
 
     val responseBodyTracker = ResponseBodyTracker()
     val unfurler = Unfurler(
@@ -137,11 +132,58 @@ class UnfurlerTest {
         .eventListener(responseBodyTracker)
         .build(),
     )
-    val result = unfurler.unfurl(server.url("/"))
-    assertThat(result?.title).isEqualTo("Great teams merge fast")
 
-    // Verify that all response bodies were closed.
-    assertThat(responseBodyTracker.openBodies).isEmpty()
+    flow {
+      emit(unfurler.unfurl(server.url("/")))
+    }.test {
+      expectNoEvents()
+
+      // The first user agent is sent immediately.
+      assertThat(serverDispatcher.requestedAgents.awaitItem()).isEqualTo("UserAgent 403")
+      serverDispatcher.responses.update {
+        val response403 = MockResponse.Builder()
+          .code(403)
+          .setHeader("Content-Type", "text/html")
+          .body("<html><head><title>Access Denied</title></head></html>")
+          .build()
+        it + ("UserAgent 403" to response403)
+      }
+      expectNoEvents()
+
+      // Wait for the 2nd user agent to be sent.
+      serverDispatcher.requestedAgents.expectNoEvents()
+      Thread.sleep(HtmlMetadataUnfurlerExtension.DelayForFallbackUserAgents.inWholeMilliseconds)
+      assertThat(serverDispatcher.requestedAgents.awaitItem()).isEqualTo("UserAgent Timeout")
+
+      // The 2nd user agent times out, so no HTML is downloaded.
+      serverDispatcher.responses.update {
+        val responseTimeout = MockResponse.Builder()
+          .headersDelay(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
+          .build()
+        it + ("UserAgent Timeout" to responseTimeout)
+      }
+      expectNoEvents()
+
+      // Wait for the 3rd user agent to be sent.
+      serverDispatcher.requestedAgents.expectNoEvents()
+      Thread.sleep(HtmlMetadataUnfurlerExtension.DelayForFallbackUserAgents.inWholeMilliseconds)
+      assertThat(serverDispatcher.requestedAgents.awaitItem()).isEqualTo("UserAgent 200")
+
+      // The 3rd user agent succeeds. The HTML is downloaded and parsed.
+      serverDispatcher.responses.update {
+        val response200 = MockResponse.Builder()
+          .setHeader("Content-Type", "text/html")
+          .body(readResourceFile("html_source_saket.me.html"))
+          .build()
+        it + ("UserAgent 200" to response200)
+      }
+      assertThat(awaitItem()?.title).isEqualTo("Great teams merge fast")
+
+      // Verify that all response bodies were closed.
+      assertThat(responseBodyTracker.openBodies).isEmpty()
+
+      awaitComplete()
+    }
   }
 
   @Test fun `when the first user agent succeeds, do not use any remaining agents`() = runTest {

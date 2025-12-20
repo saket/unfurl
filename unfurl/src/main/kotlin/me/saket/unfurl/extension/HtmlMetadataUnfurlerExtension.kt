@@ -45,11 +45,10 @@ open class HtmlMetadataUnfurlerExtension(
     return winnerTakesItAll {
       for ((index, userAgent) in httpUserAgents.withIndex()) {
         attempt {
-          if (index > 0) {
-            // Most web pages should be reachable using the first user agent. Delay fallback
-            // user agents to give the first one a chance to succeed instead of firing all at once.
-            delay(500.milliseconds)
-          }
+          // Most web pages should be reachable using the first user agent. Requests are staggered
+          // so that earlier user agents get a chance to succeed before firing later ones.
+          delay(DelayForFallbackUserAgents * index)
+
           requestHtml(url, userAgent)?.use { response ->
             if (response.isSuccessful && response.body.contentType().isHtmlText()) {
               claimVictory {
@@ -63,7 +62,7 @@ open class HtmlMetadataUnfurlerExtension(
   }
 
   private suspend fun UnfurlerScope.requestHtml(url: HttpUrl, userAgent: String): Response? {
-    logger.log("Downloading HTML for $url using user agent: $userAgent")
+    logger.log("Connecting to $url using user agent: $userAgent")
 
     val request: Request = Request.Builder()
       .url(url)
@@ -128,5 +127,7 @@ open class HtmlMetadataUnfurlerExtension(
     // Also used by Signal.
     const val WhatsAppUserAgent =
       "WhatsApp/2"
+
+    internal val DelayForFallbackUserAgents = 500.milliseconds
   }
 }
