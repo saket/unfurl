@@ -36,6 +36,9 @@ import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okio.Buffer
+import okio.GzipSink
+import okio.buffer
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -375,7 +378,8 @@ class UnfurlerTest {
     server.enqueue(
       MockResponse.Builder()
         .setHeader("Content-Type", "text/html; charset=UTF-8")
-        .body(readResourceFile("html_source_nytimes_best_movies.html"))
+        .setHeader("Content-Encoding", "gzip")
+        .body(readResourceFile("html_source_nytimes_best_movies.html").gzipped())
         .throttleBody(2.megabits.inWholeBytes, 1, TimeUnit.SECONDS)
         .build()
     )
@@ -395,8 +399,8 @@ class UnfurlerTest {
       unfurler.unfurl(server.url("/"))
     }
     assertThat(result?.title).isEqualTo("The 100 Best Movies of the 21st Century")
-    assertThat(totalBytesDownloaded).isLessThan(100.kilobytes)
-    assertThat(duration).isLessThan(0.5.seconds)
+    assertThat(totalBytesDownloaded).isLessThan(40.kilobytes)
+    assertThat(duration).isLessThan(0.3.seconds)
   }
 
   @Test fun `response bodies are closed after failed unfurl`() = runTest {
@@ -532,5 +536,11 @@ private class ResponseBodyTracker : EventListener() {
 
   override fun responseBodyEnd(call: Call, byteCount: Long) {
     openBodies.remove(call)
+  }
+}
+
+private fun String.gzipped(): Buffer {
+  return Buffer().apply {
+    GzipSink(this).buffer().use { it.writeUtf8(this@gzipped) }
   }
 }
