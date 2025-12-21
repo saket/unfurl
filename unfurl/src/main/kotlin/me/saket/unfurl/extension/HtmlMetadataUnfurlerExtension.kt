@@ -130,9 +130,9 @@ open class HtmlMetadataUnfurlerExtension(
   @Suppress("ConstPropertyName", "unused")
   companion object {
     val DefaultUserAgents: List<String> = listOf(
+      ChromeMobileUserAgent,
       WhatsAppUserAgent,
       SlackBotUserAgent,
-      ChromeMobileUserAgent,
     )
 
     const val SlackBotUserAgent =
