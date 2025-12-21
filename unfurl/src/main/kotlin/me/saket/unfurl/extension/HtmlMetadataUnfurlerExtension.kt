@@ -4,6 +4,11 @@ package me.saket.unfurl.extension
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withContext
 import me.saket.unfurl.UnfurlResult
 import okhttp3.HttpUrl
@@ -13,7 +18,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.coroutines.executeAsync
 import java.io.IOException
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import org.jsoup.nodes.Document as JsoupDocument
 import org.jsoup.parser.Parser as JsoupParser
 import org.jsoup.parser.StreamParser as JsoupStreamParser
@@ -42,26 +47,28 @@ open class HtmlMetadataUnfurlerExtension(
   }
 
   protected suspend fun UnfurlerScope.downloadHtml(url: HttpUrl): JsoupDocument? {
-    return winnerTakesItAll {
-      for ((index, userAgent) in httpUserAgents.withIndex()) {
-        attempt {
-          // Most web pages should be reachable using the first user agent. Requests are staggered
-          // so that earlier user agents get a chance to succeed before firing later ones.
-          delay(DelayForFallbackUserAgents * index)
-
-          requestHtml(url, userAgent)?.use { response ->
-            if (response.isSuccessful && response.body.contentType().isHtmlText()) {
-              claimVictory {
-                parseHtml(response)
-              }
-            }
-          }
-        }
+    // Try out all user agents in case the website blocks certain user agents.
+    return httpUserAgents.mapIndexed { index, userAgent ->
+      flow {
+        // Most web pages should be reachable using the first user agent. Remaining
+        // requests are staggered so that earlier user agents get a chance to succeed
+        // before firing later ones.
+        delay(DelayForFallbackUserAgents * index)
+        emit(downloadHtml(url, userAgent))
       }
     }
+      .merge()
+      .filterNotNull()
+      .filter { html ->
+        // The metadata is extracted twice. Once here and once by the caller of
+        // this function. This isn't ideal, but it was the only way to not break
+        // binary compatibility by changing this open function's signature.
+        extractMetadata(html)?.isEmptyish() == false
+      }
+      .firstOrNull()
   }
 
-  private suspend fun UnfurlerScope.requestHtml(url: HttpUrl, userAgent: String): Response? {
+  private suspend fun UnfurlerScope.downloadHtml(url: HttpUrl, userAgent: String): JsoupDocument? {
     logger.log("Connecting to $url using user agent: $userAgent")
 
     val request: Request = Request.Builder()
@@ -72,11 +79,21 @@ open class HtmlMetadataUnfurlerExtension(
       .build()
 
     try {
-      return httpClient.newCall(request).executeAsync()
+      httpClient.newCall(request).executeAsync().use { response ->
+        val contentType = response.body.contentType()
+        if (response.isSuccessful && contentType.isHtmlText()) {
+          return parseHtml(response)
+        } else {
+          logger.log(
+            "Failed to download HTML for $url using user agent: $userAgent. " +
+              "Received HTTP status: ${response.code}, Content-Type: $contentType."
+          )
+        }
+      }
     } catch (e: IOException) {
       logger.log(e, "Failed to download HTML for $url using user agent: $userAgent")
-      return null
     }
+    return null
   }
 
   private fun parseHtml(response: Response): JsoupDocument {
@@ -128,6 +145,10 @@ open class HtmlMetadataUnfurlerExtension(
     const val WhatsAppUserAgent =
       "WhatsApp/2"
 
-    internal val DelayForFallbackUserAgents = 500.milliseconds
+    internal val DelayForFallbackUserAgents = 1.seconds
   }
+}
+
+private fun UnfurlResult.isEmptyish(): Boolean {
+  return title.isNullOrBlank() && description.isNullOrBlank() && extras.isEmpty()
 }

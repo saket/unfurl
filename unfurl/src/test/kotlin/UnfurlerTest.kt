@@ -97,9 +97,23 @@ class UnfurlerTest {
 
   @Test fun `try out all user agents for websites that block some agents (real)`() = runTest {
     val unfurler = Unfurler()
+
+    // kraken.com frequently returns an HTTP 403 for Chrome's user agent, but allows Slack and WhatsApp.
+    with(unfurler.unfurl("https://kraken.com")) {
+      assertThat(this?.title.orEmpty()).contains("Kraken", ignoreCase = true)
+    }
+
+    // bestbuy.com throttles requests with Slack's user agent by 8-9s.
+    with(unfurler.unfurl("https://bestbuy.com")) {
+      assertThat(this?.title.orEmpty()).contains("Best Buy", ignoreCase = true)
+    }
+
+    // aa.com times out for Slack's user agent.
     with(unfurler.unfurl("https://aa.com")) {
       assertThat(this?.title.orEmpty()).contains("American Airlines", ignoreCase = true)
     }
+
+    // notion.so returns an empty HTML for Slack's user agent and HTTP 404 for WhatsApp's.
     with(unfurler.unfurl("https://www.notion.so/Test-5dd9c63227584bb494966fba4f4e002d")) {
       assertThat(this?.title.orEmpty()).contains("Notion", ignoreCase = true)
     }
@@ -109,6 +123,7 @@ class UnfurlerTest {
     val userAgents = listOf(
       "UserAgent 403",
       "UserAgent Timeout",
+      "UserAgent Empty Html",
       "UserAgent 200",
     )
 
@@ -140,7 +155,7 @@ class UnfurlerTest {
     }.test {
       expectNoEvents()
 
-      // The first user agent is sent immediately.
+      // The first user agent should be sent immediately, without any delay.
       assertThat(serverDispatcher.requestedAgents.awaitItem()).isEqualTo("UserAgent 403")
       serverDispatcher.responses.update {
         val response403 = MockResponse.Builder()
@@ -152,12 +167,12 @@ class UnfurlerTest {
       }
       expectNoEvents()
 
-      // Wait for the 2nd user agent to be sent.
+      // Wait for "UserAgent Timeout" to be sent.
       serverDispatcher.requestedAgents.expectNoEvents()
       Thread.sleep(HtmlMetadataUnfurlerExtension.DelayForFallbackUserAgents.inWholeMilliseconds)
       assertThat(serverDispatcher.requestedAgents.awaitItem()).isEqualTo("UserAgent Timeout")
 
-      // The 2nd user agent times out, so no HTML is downloaded.
+      // "UserAgent Timeout" times out, so no HTML is ever downloaded.
       serverDispatcher.responses.update {
         val responseTimeout = MockResponse.Builder()
           .headersDelay(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
@@ -166,12 +181,27 @@ class UnfurlerTest {
       }
       expectNoEvents()
 
-      // Wait for the 3rd user agent to be sent.
+      // Wait for "UserAgent Empty Html".
+      serverDispatcher.requestedAgents.expectNoEvents()
+      Thread.sleep(HtmlMetadataUnfurlerExtension.DelayForFallbackUserAgents.inWholeMilliseconds)
+      assertThat(serverDispatcher.requestedAgents.awaitItem()).isEqualTo("UserAgent Empty Html")
+
+      // "UserAgent Empty Html" receives an empty HTML that doesn't contain any social metadata.
+      serverDispatcher.responses.update {
+        val responseEmptyHtml = MockResponse.Builder()
+          .setHeader("Content-Type", "text/html")
+          .body("<html><head><title></title></head></html>")
+          .build()
+        it + ("UserAgent Empty Html" to responseEmptyHtml)
+      }
+      expectNoEvents()
+
+      // Wait for "UserAgent 200".
       serverDispatcher.requestedAgents.expectNoEvents()
       Thread.sleep(HtmlMetadataUnfurlerExtension.DelayForFallbackUserAgents.inWholeMilliseconds)
       assertThat(serverDispatcher.requestedAgents.awaitItem()).isEqualTo("UserAgent 200")
 
-      // The 3rd user agent succeeds. The HTML is downloaded and parsed.
+      // "UserAgent 200" succeeds. The HTML is downloaded and parsed.
       serverDispatcher.responses.update {
         val response200 = MockResponse.Builder()
           .setHeader("Content-Type", "text/html")
