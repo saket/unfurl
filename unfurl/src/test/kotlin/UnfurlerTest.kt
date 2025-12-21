@@ -24,6 +24,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import me.saket.bytesize.decimalBytes
+import me.saket.bytesize.kilobytes
 import me.saket.bytesize.megabits
 import me.saket.unfurl.extension.HtmlMetadataUnfurlerExtension
 import mockwebserver3.Dispatcher
@@ -347,12 +349,23 @@ class UnfurlerTest {
         .throttleBody(2.megabits.inWholeBytes, 1, TimeUnit.SECONDS)
         .build()
     )
+    var totalBytesDownloaded = 0.decimalBytes
 
     val (result, duration) = measureTimedValue {
-      val unfurler = Unfurler()
+      val unfurler = Unfurler(
+        httpClient = Unfurler.defaultOkHttpClient()
+          .newBuilder()
+          .eventListener(object : EventListener() {
+            override fun responseBodyEnd(call: Call, byteCount: Long) {
+              totalBytesDownloaded += byteCount.decimalBytes
+            }
+          })
+          .build(),
+      )
       unfurler.unfurl(server.url("/"))
     }
     assertThat(result?.title).isEqualTo("The 100 Best Movies of the 21st Century")
+    assertThat(totalBytesDownloaded).isLessThan(100.kilobytes)
     assertThat(duration).isLessThan(0.5.seconds)
   }
 
