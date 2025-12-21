@@ -9,7 +9,7 @@ fun Unfurler(
   cacheSize: Int = 100,
   extensions: List<UnfurlerExtension> = emptyList(),
   httpClient: OkHttpClient = Unfurler.defaultOkHttpClient(),
-  logger: UnfurlLogger = UnfurlLogger.println(),
+  logger: UnfurlLogger = UnfurlLogger.noOp(),
 ): Unfurler {
   return RealUnfurler(
     cacheSize = cacheSize,
