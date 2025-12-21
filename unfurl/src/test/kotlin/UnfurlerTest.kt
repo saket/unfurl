@@ -448,6 +448,20 @@ class UnfurlerTest {
     )
   }
 
+  @Test fun `http 404`() = runTest {
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest) =
+        MockResponse.Builder()
+          .code(404)
+          .build()
+    }
+
+    val unfurler = Unfurler(
+      logger = UnfurlLogger.println(),
+    )
+    assertThat(unfurler.unfurl(server.url("/"))).isNull()
+  }
+
   private fun readResourceFile(fileName: String): String {
     val url = Thread.currentThread().contextClassLoader.getResource(fileName)!!
     return File(url.path).readText()
