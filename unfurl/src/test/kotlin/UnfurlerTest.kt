@@ -423,18 +423,21 @@ class UnfurlerTest {
     assertThat(responseBodyTracker.openBodies).isEmpty()
   }
 
-  @Test fun `html without head element doesn't crash`() = runTest {
-    server.enqueue(
-      MockResponse.Builder()
-        .setHeader("Content-Type", "text/html; charset=UTF-8")
-        .body("<html><body><p>No head element here</p></body></html>")
-        .build()
-    )
+  @Test fun `html without head element`() = runTest {
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest) =
+        MockResponse.Builder()
+          .setHeader("Content-Type", "text/html; charset=UTF-8")
+          .body("<html><body><p>No head element here</p></body></html>")
+          .build()
+    }
 
     val url = server.url("/")
 
-    val result = Unfurler().unfurl(url)
-    assertThat(result).isEqualTo(
+    val unfurler = Unfurler(
+      logger = UnfurlLogger.println(),
+    )
+    assertThat(unfurler.unfurl(url)).isEqualTo(
       UnfurlResult(
         url = url,
         title = null,

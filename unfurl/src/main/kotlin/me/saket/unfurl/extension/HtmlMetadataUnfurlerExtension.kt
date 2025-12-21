@@ -47,6 +47,8 @@ open class HtmlMetadataUnfurlerExtension(
   }
 
   protected suspend fun UnfurlerScope.downloadHtml(url: HttpUrl): JsoupDocument? {
+    var lastNotNullValue: JsoupDocument? = null
+
     // Try out all user agents in case the website blocks certain user agents.
     return httpUserAgents.mapIndexed { index, userAgent ->
       flow {
@@ -63,9 +65,14 @@ open class HtmlMetadataUnfurlerExtension(
         // The metadata is extracted twice. Once here and once by the caller of
         // this function. This isn't ideal, but it was the only way to not break
         // binary compatibility by changing this open function's signature.
-        extractMetadata(html)?.isEmptyish() == false
+        val peek = extractMetadata(html)
+        if (peek != null) {
+          lastNotNullValue = html
+        }
+        peek?.isEmptyish() == false
       }
       .firstOrNull()
+      ?: lastNotNullValue
   }
 
   private suspend fun UnfurlerScope.downloadHtml(url: HttpUrl, userAgent: String): JsoupDocument? {
