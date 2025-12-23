@@ -116,7 +116,7 @@ class UnfurlerTest {
       assertThat(this?.title.orEmpty()).contains("American Airlines", ignoreCase = true)
     }
 
-    // notion.so returns an empty HTML for Slack's user agent and HTTP 404 for WhatsApp's.
+    // notion.so serves a stub HTML for Slack’s user agent and HTTP 404 for WhatsApp's.
     with(unfurler.unfurl("https://www.notion.so/Test-5dd9c63227584bb494966fba4f4e002d")) {
       assertThat(this?.title.orEmpty()).contains("Notion", ignoreCase = true)
     }
