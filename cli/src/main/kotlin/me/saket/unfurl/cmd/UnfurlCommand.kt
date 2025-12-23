@@ -25,6 +25,7 @@ import me.saket.unfurl.unfurl
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
   UnfurlCommand().main(args)
@@ -73,6 +74,9 @@ class UnfurlCommand : CliktCommand(name = "unfurl") {
     }
 
     okHttp.forceShutDown()
+
+    // Not sure why, but the terminal has stopped shutting down on its own since v2.3.0.
+    exitProcess(0)
   }
 
   private suspend fun <T> withProgressAnimation(block: suspend () -> T): T {
