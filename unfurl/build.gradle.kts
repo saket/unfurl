@@ -1,5 +1,5 @@
 plugins {
-  alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.kotlin.multiplatform)
   alias(libs.plugins.dokka)
   alias(libs.plugins.mavenPublish)
   alias(libs.plugins.testResources)
@@ -9,27 +9,38 @@ plugins {
 
 group = "me.saket.unfurl"
 
+kotlin {
+  jvm()
+
+  sourceSets {
+    commonMain.dependencies {
+      api(libs.kotlinx.coroutines.core)
+      implementation(libs.cache4k)
+    }
+    commonTest.dependencies {
+      implementation(libs.assertk)
+      implementation(libs.bytesize)
+      implementation(libs.turbine)
+      implementation(libs.testResources)
+      implementation(libs.kotlinx.coroutines.test)
+    }
+
+    jvmMain.dependencies {
+      api(libs.okhttp.core)
+      implementation(libs.jsoup)
+      implementation(libs.okhttp.coroutines)
+    }
+
+    jvmTest.dependencies {
+      implementation(libs.testParameterInjector)
+      implementation(libs.okhttp.mockWebServer)
+    }
+  }
+}
+
 metalava {
   filename.set("api/api.txt")
   enforceCheck.set(true)
-}
-
-dependencies {
-  api(libs.kotlinx.coroutines.core)
-  api(libs.okhttp.core)
-
-  implementation(libs.jsoup)
-  implementation(libs.cache4k)
-  implementation(libs.okhttp.coroutines)
-
-  testImplementation(libs.junit)
-  testImplementation(libs.assertk)
-  testImplementation(libs.bytesize)
-  testImplementation(libs.turbine)
-  testImplementation(libs.testResources)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.testParameterInjector)
-  testImplementation(libs.okhttp.mockWebServer)
 }
 
 mavenPublishing {

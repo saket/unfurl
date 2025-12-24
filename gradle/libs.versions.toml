@@ -21,6 +21,7 @@ turbine = "1.2.1" # https://github.com/cashapp/turbine/releases
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 testResources = { id = "com.goncalossilva.resources", version.ref = "testResources" }

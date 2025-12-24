@@ -44,7 +44,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import java.io.File
+import com.goncalossilva.resources.Resource
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.milliseconds
@@ -467,8 +467,7 @@ class UnfurlerTest {
   }
 
   private fun readResourceFile(fileName: String): String {
-    val url = Thread.currentThread().contextClassLoader.getResource(fileName)!!
-    return File(url.path).readText()
+    return Resource("src/jvmTest/resources/$fileName").readText()
   }
 
   @Suppress("EnumEntryName", "unused")
